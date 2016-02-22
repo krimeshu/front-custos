@@ -4,13 +4,13 @@ This is a experimental tool kit for front-end building. For running gulp tasks w
 
 ## How to use
 
-```
+```bash
 cd path/to/front-custos
 npm install
 ```
 
 Check if it is installed successfully.
 
-```
+```bash
 node test
 ```
