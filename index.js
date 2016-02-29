@@ -6,10 +6,9 @@ var _os = require('os'),
     _path = require('path'),
 
     gulp = null,
-    runSequence = null,
+    runSequenceUseGulp = null,
 
-    _runSequence = require('run-sequence'),
-
+    runSequence = require('run-sequence'),
     del = require('del'),
     cache = require('gulp-cache'),
     imagemin = require('gulp-imagemin'),
@@ -23,21 +22,10 @@ var _os = require('os'),
     SpriteCrafterProxy = require('./script/sprite-crafter-proxy.js'),
     PrefixCrafterProxy = require('./script/prefix-crafter-proxy.js');
 
-var params = {
-    srcDir: null,
-    allot: true,
-    allotOpt: {
-        pageDir: null,
-        staticDir: null,
-        staticUrlHead: null
+var config = {
+        delUnusedFiles: true
     },
-    version: null,
-    flatten: true,
-    flattenMap: {},
-    hashLink: true,
-    delUnusedFiles: true,
-    keepOldCopy: false
-};
+    params = {};
 
 var tasks = {
     // 准备构建环境：
@@ -191,7 +179,7 @@ var tasks = {
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'optimize_image 任务开始……');
 
-        runSequence(['optimize_image:png', 'optimize_image:other'], function () {
+        runSequenceUseGulp(['optimize_image:png', 'optimize_image:other'], function () {
             console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'optimize_image 任务结束。（' + timer.getTime() + 'ms）');
             done();
         });
@@ -228,8 +216,9 @@ var tasks = {
     'do_dist': function (done) {
         var buildDir = params.buildDir,
             distDir = params.distDir,
-            delUnusedFiles = params.delUnusedFiles,
-            usedFiles = params.usedFiles;
+            usedFiles = params.usedFiles,
+
+            delUnusedFiles = config.delUnusedFiles;
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist 任务开始……');
@@ -239,12 +228,13 @@ var tasks = {
         }, function (err) {
             console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist: ', err);
         });
-        if (!usedFiles) {
+
+        if (delUnusedFiles && !usedFiles) {
             usedFiles = params.usedFiles = linker.analyseDepRelation(buildDir);
-        }
-        if (!delUnusedFiles) {
+        } else {
             usedFiles = null;
         }
+
         del([distDir + '/**/*'], {force: true}).then(function () {
             gulp.src(buildDir + '/**/*')
                 .pipe(linker.excludeUnusedFiles(usedFiles))
@@ -255,26 +245,13 @@ var tasks = {
                     done();
                 });
         });
-    },
-    'common_tasks': function (done) {
-        runSequence(
-            'prepare_build',
-            'replace_const',
-            'join_include',
-            'sprite_crafter',
-            'prefix_crafter',
-            'allot_link',
-            'optimize_image',
-            'do_dist',
-            done
-        );
     }
 };
 
 module.exports = {
     registerTasks: function (_gulp) {
         gulp = _gulp;
-        runSequence = _runSequence.use(gulp);
+        runSequenceUseGulp = runSequence.use(gulp);
 
         for (var taskName in tasks) {
             if (!tasks.hasOwnProperty(taskName)) {
@@ -282,6 +259,9 @@ module.exports = {
             }
             gulp.task(taskName, tasks[taskName]);
         }
+    },
+    config: function (_config) {
+        config = _config;
     },
     process: function (_params, cb) {
         params = _params;
@@ -307,9 +287,12 @@ module.exports = {
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务开始……');
-        runSequence(params.taskName, function () {
-            console.log(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务结束。（' + timer.getTime() + 'ms）');
+
+        var tasks = params.tasks || [];
+        tasks.push(function () {
+            console.log(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务结束。（共计' + timer.getTime() + 'ms）');
             cb && cb();
         });
+        runSequenceUseGulp.apply(null, tasks);
     }
 };

@@ -7,6 +7,9 @@ var gulp = require('gulp'),
     frontCustos = require('./index.js');
 
 frontCustos.registerTasks(gulp);
+frontCustos.config({
+    delUnusedFiels: true
+});
 
 var params = {
     srcDir: './example/',
@@ -35,9 +38,17 @@ var params = {
         },
         hashLink: true
     },
-    delUnusedFiles: true,
     keepOldCopy: false,
-    taskName: 'common_tasks'
+    tasks: [
+        'prepare_build',
+        'replace_const',
+        'join_include',
+        'sprite_crafter',
+        'prefix_crafter',
+        'allot_link',
+        'optimize_image',
+        'do_dist'
+    ]
 };
 frontCustos.process(params);
 
