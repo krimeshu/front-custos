@@ -18,6 +18,7 @@
     "gulp-imagemin": "^2.4.0",
     "imagemin-pngquant": "^4.2.2",
     "postcss": "^5.0.16",
+    "request": "^2.69.0",
     "run-sequence": "^1.1.5",
     "spritesmith": "^3.1.0",
     "through2": "^2.0.1"

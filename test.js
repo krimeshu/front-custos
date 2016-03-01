@@ -8,10 +8,19 @@ var gulp = require('gulp'),
 
 frontCustos.registerTasks(gulp);
 frontCustos.config({
-    delUnusedFiels: true
+    delUnusedFiels: true,
+    uploadPage: 'http://admin.ac.oa.com/uploadDevFile.php',
+    uploadForm: function (filePath, fileStream, projectName, relativeDir) {
+        var prefix = projectName +
+            (relativeDir ? '/' + relativeDir : '');
+        return {
+            'prefix': prefix,
+            'myfile': fileStream
+        };
+    }
 });
 
-var params = {
+frontCustos.process({
     srcDir: './example/',
     version: '0.1.0',
     scOpt: {
@@ -49,7 +58,6 @@ var params = {
         'optimize_image',
         'do_dist'
     ]
-};
-frontCustos.process(params);
+});
 
 

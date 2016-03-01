@@ -19,6 +19,7 @@ var _os = require('os'),
     ConstReplacer = require('./script/const-replacer.js'),
     FileIncluder = require('./script/file-includer.js'),
     FileLinker = require('./script/file-linker.js'),
+    FileUploader = require('./script/file-uploader.js'),
     SpriteCrafterProxy = require('./script/sprite-crafter-proxy.js'),
     PrefixCrafterProxy = require('./script/prefix-crafter-proxy.js');
 
@@ -245,6 +246,48 @@ var tasks = {
                     done();
                 });
         });
+    },
+    // 上传：
+    // - 将发布文件夹中的文件发到测试服务器
+    'do_upload': function (done) {
+        var prjName = params.prjName,
+            distDir = params.distDir,
+
+            uploadPage = config.uploadPage,
+            uploadForm = config.uploadForm;
+
+        var uploader = new FileUploader({
+            projectName: prjName,
+            projectDir: distDir,
+            uploadPage: uploadPage,
+            uploadForm: uploadForm
+        });
+
+        var timer = new Timer();
+        console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务开始……');
+
+        gulp.src(_path.resolve(distDir, '/**/*'))
+            .pipe(uploader.appendFile())
+            .on('end', function () {
+                uploader.doUpload(function onProgress(err, filePath, response) {
+                    // 完成一个文件时
+                    var relativePath = _path.relative(distDir, filePath),
+                        succeedCount = results.succeed.length,
+                        failedCount = results.failed.length,
+                        totalCount = succeedCount + failedCount;
+                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务进度：' + relativePath + ' 上传' +
+                        (!err ? '成功' : '失败') + '，' + totalCount + '/' + succeedCount + '/' + failedCount);
+                }, function onComplete(results) {
+                    // 完成所有文件时
+                    var succeedCount = results.succeed.length,
+                        failedCount = results.failed.length,
+                        totalCount = succeedCount + failedCount,
+                        resText = '，共' + totalCount + '个文件，成功' + succeedCount + '个' +
+                            (failedCount ? '，失败' + failedCount + '个' : '');
+                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist 任务结束' + resText + '（' + timer.getTime() + 'ms）');
+                    done();
+                });
+            });
     }
 };
 
