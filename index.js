@@ -10,6 +10,7 @@ var _os = require('os'),
 
     runSequence = require('run-sequence'),
     del = require('del'),
+    plumber = require('gulp-plumber'),
     cache = require('gulp-cache'),
     imagemin = require('gulp-imagemin'),
     pngquant = require('imagemin-pngquant'),
@@ -245,8 +246,8 @@ var tasks = {
             usedFiles = null;
         }
 
-        del([distDir + '/**/*'], {force: true}).then(function () {
-            gulp.src(buildDir + '/**/*')
+        del([_path.resolve(distDir, '**/*')], {force: true}).then(function () {
+            gulp.src(_path.resolve(buildDir, '**/*'))
                 .pipe(linker.excludeUnusedFiles(usedFiles))
                 .pipe(linker.excludeEmptyDir())
                 .pipe(gulp.dest(distDir))
@@ -262,38 +263,56 @@ var tasks = {
         var prjName = params.prjName,
             distDir = params.distDir,
 
+            alOpt = params.alOpt,
+            pageDir = alOpt.pageDir,
+            staticDir = alOpt.staticDir,
+
             uploadPage = config.uploadPage,
-            uploadForm = config.uploadForm;
+            uploadForm = config.uploadForm,
+            uploadCallback = config.uploadCallback,
+            concurrentLimit = config.concurrentLimit;
 
         var uploader = new FileUploader({
             projectName: prjName,
-            projectDir: distDir,
+            pageDir: alOpt.allot ? _path.resolve(distDir, pageDir) : distDir,
+            staticDir: alOpt.allot ? _path.resolve(distDir, staticDir) : distDir,
             uploadPage: uploadPage,
-            uploadForm: uploadForm
+            uploadForm: uploadForm,
+            uploadCallback: uploadCallback,
+            concurrentLimit: concurrentLimit
         });
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务开始……');
 
-        gulp.src(_path.resolve(distDir, '/**/*'))
+        gulp.src(_path.resolve(distDir, '**/*'))
+            .pipe(plumber({
+                'errorHandler': function (err) {
+                    console.log('Error: ', err);
+                }
+            }))
             .pipe(uploader.appendFile())
             .on('end', function () {
-                uploader.doUpload(function onProgress(err, filePath, response) {
+                uploader.start(function onProgress(err, filePath, response, results) {
                     // 完成一个文件时
-                    var relativePath = _path.relative(distDir, filePath),
-                        succeedCount = results.succeed.length,
-                        failedCount = results.failed.length,
-                        totalCount = succeedCount + failedCount;
+                    var sof = !err && uploadCallback(response),
+
+                        relativePath = _path.relative(distDir, filePath),
+                        succeedCount = results.succeed.length + sof,
+                        failedCount = results.failed.length + !sof,
+                        totalCount = results.totalCount;
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务进度：' + relativePath + ' 上传' +
-                        (!err ? '成功' : '失败') + '，' + totalCount + '/' + succeedCount + '/' + failedCount);
+                        (sof ? '成功' : '失败') + '，' + totalCount + '/' + succeedCount + '/' + failedCount);
+                    console.log('服务器回复：', response);
+                    return sof;
                 }, function onComplete(results) {
                     // 完成所有文件时
                     var succeedCount = results.succeed.length,
                         failedCount = results.failed.length,
-                        totalCount = succeedCount + failedCount,
+                        totalCount = results.totalCount,
                         resText = '，共' + totalCount + '个文件，成功' + succeedCount + '个' +
                             (failedCount ? '，失败' + failedCount + '个' : '');
-                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist 任务结束' + resText + '（' + timer.getTime() + 'ms）');
+                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务结束' + resText + '（' + timer.getTime() + 'ms）');
                     done();
                 });
             });

@@ -11,14 +11,23 @@ frontCustos.config({
     htmlEnhanced: false,
     delUnusedFiles: true,
     uploadPage: 'http://admin.ac.oa.com/uploadDevFile.php',
-    uploadForm: function (filePath, fileStream, projectName, relativeDir) {
-        var prefix = projectName +
-            (relativeDir ? '/' + relativeDir : '');
+    uploadForm: function (fileStream, projectName, relativeName) {
+        var utils = require('./script/utils.js'),
+            prefix = (relativeName.split('/').slice(0, -1));
+        prefix.splice(0, 0, projectName);
+        if (!utils.isPage(relativeName)) {
+            prefix.pop();
+        }
         return {
-            'prefix': prefix,
+            'fileName': relativeName,
+            'prefix': prefix.join('/'),
             'myfile': fileStream
         };
-    }
+    },
+    uploadCallback: function (response) {
+        return /^上传成功/.test(response);
+    },
+    concurrentLimit: 1
 });
 
 frontCustos.process({

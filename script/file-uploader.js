@@ -6,32 +6,46 @@ var _fs = require('fs'),
     _path = require('path'),
 
     Through2 = require('through2'),
-    Request = require('request');
+    Request = require('request'),
+
+    Utils = require('./utils.js');
 
 var FileUploader = function (opts) {
     var self = this,
         projectName = opts.projectName,
-        projectDir = opts.projectDir,
+        pageDir = opts.pageDir,
+        staticDir = opts.staticDir,
         uploadPage = opts.uploadPage,
-        uploadForm = opts.uploadForm;
+        uploadForm = opts.uploadForm,
+        concurrentLimit = opts.concurrentLimit || 1;
 
+    self.uploadQueue = [];
     self.projectName = projectName;
-    self.projectDir = projectDir;
+    self.pageDir = pageDir;
+    self.staticDir = staticDir;
     self.uploadPage = uploadPage;
     self.uploadForm = uploadForm;
-    self.uploadQueue = [];
+    self.concurrentLimit = concurrentLimit;
+    self.concurrentCount = 0;
 };
 
 FileUploader.prototype = {
     appendFile: function () {
         var self = this;
-        return Through2.obj(function (file, enc, cb) {
-            self.uploadQueue.push(file.path);
 
-            return cb(null, file);
-        });
+        self.uploadQueue = [];
+        return Through2.obj(function (file, enc, cb) {
+            //console.log('FileUploader - appendFile: ', file.path);
+            if (!file.isDirectory()) {
+                self.uploadQueue.push(file.path);
+            }
+
+            this.push(file);
+
+            cb();
+        }).resume();
     },
-    doUpload: function (onProgress, onComplete) {
+    start: function (onProgress, onComplete) {
         var self = this,
             uploadForm = self.uploadForm,
             uploadQueue = self.uploadQueue;
@@ -42,48 +56,81 @@ FileUploader.prototype = {
 
         self.uploadResult = {
             succeed: [],
-            failed: []
+            failed: [],
+            totalCount: uploadQueue.length
         };
 
+        //console.log(uploadQueue);
         uploadQueue.forEach(function (filePath) {
             var uploadPage = self.uploadPage,
                 projectName = self.projectName,
-                projectDir = self.projectDir,
+                pageDir = self.pageDir,
+                staticDir = self.staticDir,
 
-                fileDir = _path.dirname(filePath),
-                relativeDir = _path.relative(projectDir, fileDir),
+                isPage = Utils.isPage(filePath),
+                relativeDir = _path.relative(isPage ? pageDir : staticDir, filePath).replace(/\\/g, '/'),
 
                 fileStream = _fs.createReadStream(filePath),
-                formMap = uploadForm(filePath, fileStream, projectName, relativeDir);
+                formMap = uploadForm(fileStream, projectName, relativeDir);
             uploadPage += (uploadPage.indexOf('?') < 0 ? '?' : '&') +
                 't=' + new Date().getTime();
-            var request = Request({
-                url: uploadPage,
-                method: 'POST',
-                timeout: 10000,
-                headers: {
-                    connection: 'keep-alive'
+
+            //var _form = {};
+            //for (var k in formMap) {
+            //    if (typeof formMap[k] === 'string') {
+            //        _form[k] = (formMap[k]);
+            //    }
+            //}
+            //console.log('fromDir: ', isPage ? pageDir : staticDir);
+            //console.log('toDir: ', fileDir);
+            //console.log('url: ', uploadPage);
+            //console.log('form:', _form);
+            //return;
+
+            var _upload = function (done) {
+                var request = Request({
+                    url: uploadPage,
+                    method: 'POST',
+                    timeout: 10000,
+                    headers: {
+                        connection: 'keep-alive'
+                    }
+                }, function (err, response, body) {
+                    var res = self.uploadResult;
+                    if (!err && (!onProgress || onProgress(err, filePath, body, res))) {
+                        res.succeed.push(filePath);
+                    } else {
+                        res.failed.push(filePath);
+                    }
+                    if (res.succeed.length + res.failed.length >= res.totalCount) {
+                        onComplete && onComplete(res);
+                    }
+                    done();
+                });
+                var form = request.form();
+                for (var key in formMap) {
+                    if (formMap.hasOwnProperty(key)) {
+                        form.append(key, formMap[key]);
+                    }
                 }
-            }, function (err, response, body) {
-                var res = self.uploadResult,
-                    que = self.uploadQueue;
-                if (err) {
-                    res.failed.push(filePath);
-                } else {
-                    res.succeed.push(filePath);
-                }
-                onProgress(err, filePath, body, res);
-                if (res.succeed.length + res.failed.length >= que.length) {
-                    onComplete(res);
-                }
-            });
-            var form = request.form();
-            for (var key in formMap) {
-                if (formMap.hasOwnProperty(key)) {
-                    form.append(key, formMap[key]);
-                }
-            }
+            };
+            self.doUpload(_upload);
         });
+    },
+    doUpload: function (_upload) {
+        var self = this,
+            concurrentLimit = self.concurrentLimit,
+            concurrentCount = self.concurrentCount;
+        if (concurrentCount < concurrentLimit) {
+            self.concurrentCount++;
+            _upload(function () {
+                self.concurrentCount--;
+            });
+        } else {
+            setTimeout(function () {
+                self.doUpload(_upload);
+            }, 200);
+        }
     }
 };
 
