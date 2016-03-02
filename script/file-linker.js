@@ -98,8 +98,8 @@ FileLinker.prototype = {
         }
         if (isHtml) {
             usedFiles = usedFiles.concat(htmlEnhanced ?
-                    self._getUsedFilesByDom(file, cb) :
-                    self._getUsedFilesByHtmlUrl(file, cb)
+                self._getUsedFilesByDom(file, cb) :
+                self._getUsedFilesByHtmlUrl(file, cb)
             );
         }
         var content = String(file.contents),
@@ -363,13 +363,13 @@ FileLinker.prototype = {
         });
     },
     excludeUnusedFiles: function (usedFiles) {
-        //console.log(usedFiles);
         return Through2.obj(function (file, enc, cb) {
-            var filePath = file.path.replace(/\\/g, '/');
+            var filePath = file.path.replace(/\\/g, '/'),
+                fileName = _path.basename(filePath);
 
             //console.log('================================================================================');
             //console.log('> FileLinker.excludeUnusedFiles - file:', file.path);
-            if (usedFiles === null || usedFiles.indexOf(filePath) >= 0) {
+            if (fileName[0] !== '_' && (usedFiles === null || usedFiles.indexOf(filePath) >= 0)) {
                 //console.log('  - passed.');
                 this.push(file);
             }

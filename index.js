@@ -132,14 +132,17 @@ var tasks = {
     // - 根据 #link 语法、CSS中 url() 匹配和 HTML 解析，自动提取并替换静态资源的链接
     'allot_link': function (done) {
         var buildDir = params.buildDir,
-            alOpt = params.alOpt;
+            alOpt = params.alOpt,
+
+            htmlEnhanced = config.htmlEnhanced;
+
         alOpt.src = buildDir;
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link 任务开始……');
 
         var linker = new FileLinker({
-            htmlEnhanced: false                                 // php代码处理有误，关闭 cheerio 解析
+            htmlEnhanced: htmlEnhanced
         }, function (err) {
             console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link:process: ', err);
         });
@@ -159,12 +162,14 @@ var tasks = {
                         oldFile !== newFile && recycledFiles.push(oldFile);
                     }
                 }
-                //console.log('recycledFiles:', recycledFiles);
                 usedFiles.forEach(function (filePath) {
                     filePath = fileAllotMap[filePath] || filePath;
                     allotedUsedFiles.push(filePath);
                 });
                 params.usedFiles = allotedUsedFiles;
+
+                //console.log('recycledFiles:', recycledFiles);
+                //console.log('allotedUsedFiles:', allotedUsedFiles);
                 // 3. 清空构建文件夹的过期旧文件
                 del(recycledFiles, {force: true}).then(function () {
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link 任务结束。（' + timer.getTime() + 'ms）');
@@ -219,19 +224,23 @@ var tasks = {
             distDir = params.distDir,
             usedFiles = params.usedFiles,
 
+            htmlEnhanced = config.htmlEnhanced,
             delUnusedFiles = config.delUnusedFiles;
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist 任务开始……');
 
         var linker = new FileLinker({
-            htmlEnhanced: false                                 // php代码处理有误，关闭 cheerio 解析
+            htmlEnhanced: htmlEnhanced                                 // php代码处理有误，关闭 cheerio 解析
         }, function (err) {
             console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist: ', err);
         });
 
-        if (delUnusedFiles && !usedFiles) {
-            usedFiles = params.usedFiles = linker.analyseDepRelation(buildDir);
+        //console.log('usedFiles:', usedFiles);
+        if (delUnusedFiles) {
+            if (!usedFiles) {
+                usedFiles = params.usedFiles = linker.analyseDepRelation(buildDir);
+            }
         } else {
             usedFiles = null;
         }

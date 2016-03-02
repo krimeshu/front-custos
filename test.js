@@ -4,11 +4,12 @@
 
 var gulp = require('gulp'),
 
-    frontCustos = require('./index.js');
+    frontCustos = require('./');
 
 frontCustos.registerTasks(gulp);
 frontCustos.config({
-    delUnusedFiels: true,
+    htmlEnhanced: false,
+    delUnusedFiles: true,
     uploadPage: 'http://admin.ac.oa.com/uploadDevFile.php',
     uploadForm: function (filePath, fileStream, projectName, relativeDir) {
         var prefix = projectName +
