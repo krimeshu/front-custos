@@ -139,12 +139,12 @@ FileIncluder.prototype = {
                                 .replace(/\n/g, '\\n');
                         }
                         if (_fragName) {
-                            _content = _content
-                                .split(new RegExp('(\\/\\*|\\/\\/)\\s*fragBegin\\s*:\\s*' +
-                                    _fragName + '\\s*(\\*\\/)?'))[1] || '';
-                            _content = _content
-                                .split(new RegExp('(\\/\\*|\\/\\/)\\s*fragEnd\\s*:\\s*' +
-                                    _fragName + '\\s*(\\*\\/)?'))[0] || '';
+                            _content = _content.split(new RegExp(
+                                    '(?:\\/\\*|\\/\\/|<!--)\\s*fragBegin\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
+                                ))[1] || '';
+                            _content = _content.split(new RegExp(
+                                    '(?:\\/\\*|\\/\\/|<!--)\\s*fragEnd\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
+                                ))[0] || '';
                         }
                         if (_para) {
                             for (var key in _para) {

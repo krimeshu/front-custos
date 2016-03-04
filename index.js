@@ -297,13 +297,13 @@ var tasks = {
                     // 完成一个文件时
                     var sof = !err && uploadCallback(response),
 
-                        relativePath = _path.relative(distDir, filePath),
+                        //relativePath = _path.relative(distDir, filePath),
                         succeedCount = results.succeed.length + sof,
                         failedCount = results.failed.length + !sof,
                         totalCount = results.totalCount;
-                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务进度：' + relativePath + ' 上传' +
-                        (sof ? '成功' : '失败') + '，' + totalCount + '/' + succeedCount + '/' + failedCount);
-                    console.log('服务器回复：', response);
+                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务进度：' +
+                        totalCount + '/' + succeedCount + '/' + failedCount);
+                    //console.log('服务器回复：', response);
                     return sof;
                 }, function onComplete(results) {
                     // 完成所有文件时

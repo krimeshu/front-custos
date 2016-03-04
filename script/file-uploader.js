@@ -53,6 +53,9 @@ FileUploader.prototype = {
         if (typeof uploadForm === 'string') {
             uploadForm = new Function('return ' + uploadForm)();
         }
+        if (typeof uploadQueue === 'string') {
+            uploadQueue = new Function('return ' + uploadQueue)();
+        }
 
         self.uploadResult = {
             succeed: [],
@@ -74,18 +77,6 @@ FileUploader.prototype = {
                 formMap = uploadForm(fileStream, projectName, relativeDir);
             uploadPage += (uploadPage.indexOf('?') < 0 ? '?' : '&') +
                 't=' + new Date().getTime();
-
-            //var _form = {};
-            //for (var k in formMap) {
-            //    if (typeof formMap[k] === 'string') {
-            //        _form[k] = (formMap[k]);
-            //    }
-            //}
-            //console.log('fromDir: ', isPage ? pageDir : staticDir);
-            //console.log('toDir: ', fileDir);
-            //console.log('url: ', uploadPage);
-            //console.log('form:', _form);
-            //return;
 
             var _upload = function (done) {
                 var request = Request({
