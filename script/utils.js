@@ -129,8 +129,8 @@ exports.getFileType = function (file) {
                     style: ['.css', '.sass', '.scss'],
                     script: ['.js', '.coffee'],
                     image: ['.jpg', '.jpeg', '.png', '.gif'],
-                    font: ['.eot", ".svg", ".ttf", ".woff'],
-                    audio: ['.mp3", ".wav", ".ogg']
+                    font: ['.eot', '.svg', '.ttf', '.woff', '.woff2'],
+                    audio: ['.mp3', '.wav', '.ogg']
                 }
             );
     for (var type in fileTypes) {

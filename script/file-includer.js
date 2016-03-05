@@ -21,7 +21,7 @@ var FileIncluder = function (onError) {
 
 FileIncluder.prototype = {
     // 用于匹配语法的正则表达式
-    _regExp: /(?:\/\/)?[#_]include\(['"]?(.*?)['"]?(,[\s\b\f\n\t\r]*\{[^\u0000]+?})?\)/gi,
+    _regExp: /(?:\/\/|\/\*)?[#_]include\(['"]?(.*?)['"]?(,[\s\b\f\n\t\r]*\{[^\u0000]+?})?\)(?:\*\/)?/gi,
     // 获取初始化后的正则表达式
     _getRegExp: function () {
         var self = this,
@@ -107,11 +107,14 @@ FileIncluder.prototype = {
                         continue;
                     }
                     var _para = null,
-                        _inlineString = false;
+                        _inlineString = false,
+                        _fragName = null;
                     if (_json) {
                         try {
                             _para = JSON.parse(_json.substr(1));
-                            _inlineString = _para['_inlineString'];
+                            _inlineString = !!_para['_inlineString'];
+                            _fragName = String(_para['_fragName'])
+                                .replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1');
                         } catch (ex) {
                             self.onError && self.onError(ex);
                             return;
@@ -126,19 +129,33 @@ FileIncluder.prototype = {
                     var _content = cache[_file],
                         _extName = _path.extname(_file);
                     if (Utils.isImage(_file)) {
-                        _content = 'data:image/' + _extName.substr(1) + ';base64, ' + _content.toString('base64');
-                    }
-                    if (_inlineString) {
-                        _content = _content.replace(/("|')/g, '\\$1').replace(/\r/g, '\\r').replace(/\n/g, '\\n');
-                    }
-                    if (_para) {
-                        for (var key in _para) {
-                            if (!_para.hasOwnProperty(key)) {
-                                continue;
+                        _content = 'data:image/' + _extName.substr(1) +
+                            ';base64, ' + _content.toString('base64');
+                    } else if (isText) {
+                        if (_inlineString) {
+                            _content = _content
+                                .replace(/("|')/g, '\\$1')
+                                .replace(/\r/g, '\\r')
+                                .replace(/\n/g, '\\n');
+                        }
+                        if (_fragName) {
+                            _content = _content.split(new RegExp(
+                                    '(?:\\/\\*|\\/\\/|<!--)\\s*fragBegin\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
+                                ))[1] || '';
+                            _content = _content.split(new RegExp(
+                                    '(?:\\/\\*|\\/\\/|<!--)\\s*fragEnd\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
+                                ))[0] || '';
+                        }
+                        if (_para) {
+                            for (var key in _para) {
+                                if (!_para.hasOwnProperty(key)) {
+                                    continue;
+                                }
+                                key = key.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1');
+                                var value = _para[key],
+                                    valueReg = new RegExp('#' + key + '#', 'g');
+                                _content = _content.replace(valueReg, value);
                             }
-                            var value = _para[key],
-                                valueReg = new RegExp('#' + key.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1') + '#', 'g');
-                            _content = _content.replace(valueReg, value);
                         }
                     }
                     content = content.replace(_str, _content);

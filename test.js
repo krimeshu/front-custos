@@ -4,11 +4,33 @@
 
 var gulp = require('gulp'),
 
-    frontCustos = require('./index.js');
+    frontCustos = require('./');
 
 frontCustos.registerTasks(gulp);
+frontCustos.config({
+    htmlEnhanced: false,
+    delUnusedFiles: true,
+    uploadPage: 'http://admin.ac.oa.com/uploadDevFile.php',
+    uploadForm: function (fileStream, projectName, relativeName) {
+        var utils = require('./script/utils.js'),
+            prefix = (relativeName.split('/').slice(0, -1));
+        prefix.splice(0, 0, projectName);
+        if (!utils.isPage(relativeName)) {
+            prefix.pop();
+        }
+        return {
+            'fileName': relativeName,
+            'prefix': prefix.join('/'),
+            'myfile': fileStream
+        };
+    },
+    uploadCallback: function (response) {
+        return /^上传成功/.test(response);
+    },
+    concurrentLimit: 1
+});
 
-var params = {
+frontCustos.process({
     srcDir: './example/',
     version: '0.1.0',
     scOpt: {
@@ -35,10 +57,17 @@ var params = {
         },
         hashLink: true
     },
-    delUnusedFiles: true,
     keepOldCopy: false,
-    taskName: 'common_tasks'
-};
-frontCustos.process(params);
+    tasks: [
+        'prepare_build',
+        'replace_const',
+        'join_include',
+        'sprite_crafter',
+        'prefix_crafter',
+        'allot_link',
+        'optimize_image',
+        'do_dist'
+    ]
+});
 
 

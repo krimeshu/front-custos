@@ -6,11 +6,11 @@ var _os = require('os'),
     _path = require('path'),
 
     gulp = null,
-    runSequence = null,
+    runSequenceUseGulp = null,
 
-    _runSequence = require('run-sequence'),
-
+    runSequence = require('run-sequence'),
     del = require('del'),
+    plumber = require('gulp-plumber'),
     cache = require('gulp-cache'),
     imagemin = require('gulp-imagemin'),
     pngquant = require('imagemin-pngquant'),
@@ -20,24 +20,14 @@ var _os = require('os'),
     ConstReplacer = require('./script/const-replacer.js'),
     FileIncluder = require('./script/file-includer.js'),
     FileLinker = require('./script/file-linker.js'),
+    FileUploader = require('./script/file-uploader.js'),
     SpriteCrafterProxy = require('./script/sprite-crafter-proxy.js'),
     PrefixCrafterProxy = require('./script/prefix-crafter-proxy.js');
 
-var params = {
-    srcDir: null,
-    allot: true,
-    allotOpt: {
-        pageDir: null,
-        staticDir: null,
-        staticUrlHead: null
+var config = {
+        delUnusedFiles: true
     },
-    version: null,
-    flatten: true,
-    flattenMap: {},
-    hashLink: true,
-    delUnusedFiles: true,
-    keepOldCopy: false
-};
+    params = {};
 
 var tasks = {
     // 准备构建环境：
@@ -143,14 +133,17 @@ var tasks = {
     // - 根据 #link 语法、CSS中 url() 匹配和 HTML 解析，自动提取并替换静态资源的链接
     'allot_link': function (done) {
         var buildDir = params.buildDir,
-            alOpt = params.alOpt;
+            alOpt = params.alOpt,
+
+            htmlEnhanced = config.htmlEnhanced;
+
         alOpt.src = buildDir;
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link 任务开始……');
 
         var linker = new FileLinker({
-            htmlEnhanced: false                                 // php代码处理有误，关闭 cheerio 解析
+            htmlEnhanced: htmlEnhanced
         }, function (err) {
             console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link:process: ', err);
         });
@@ -170,12 +163,14 @@ var tasks = {
                         oldFile !== newFile && recycledFiles.push(oldFile);
                     }
                 }
-                //console.log('recycledFiles:', recycledFiles);
                 usedFiles.forEach(function (filePath) {
                     filePath = fileAllotMap[filePath] || filePath;
                     allotedUsedFiles.push(filePath);
                 });
                 params.usedFiles = allotedUsedFiles;
+
+                //console.log('recycledFiles:', recycledFiles);
+                //console.log('allotedUsedFiles:', allotedUsedFiles);
                 // 3. 清空构建文件夹的过期旧文件
                 del(recycledFiles, {force: true}).then(function () {
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link 任务结束。（' + timer.getTime() + 'ms）');
@@ -191,7 +186,7 @@ var tasks = {
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'optimize_image 任务开始……');
 
-        runSequence(['optimize_image:png', 'optimize_image:other'], function () {
+        runSequenceUseGulp(['optimize_image:png', 'optimize_image:other'], function () {
             console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'optimize_image 任务结束。（' + timer.getTime() + 'ms）');
             done();
         });
@@ -228,25 +223,31 @@ var tasks = {
     'do_dist': function (done) {
         var buildDir = params.buildDir,
             distDir = params.distDir,
-            delUnusedFiles = params.delUnusedFiles,
-            usedFiles = params.usedFiles;
+            usedFiles = params.usedFiles,
+
+            htmlEnhanced = config.htmlEnhanced,
+            delUnusedFiles = config.delUnusedFiles;
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist 任务开始……');
 
         var linker = new FileLinker({
-            htmlEnhanced: false                                 // php代码处理有误，关闭 cheerio 解析
+            htmlEnhanced: htmlEnhanced                                 // php代码处理有误，关闭 cheerio 解析
         }, function (err) {
             console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist: ', err);
         });
-        if (!usedFiles) {
-            usedFiles = params.usedFiles = linker.analyseDepRelation(buildDir);
-        }
-        if (!delUnusedFiles) {
+
+        //console.log('usedFiles:', usedFiles);
+        if (delUnusedFiles) {
+            if (!usedFiles) {
+                usedFiles = params.usedFiles = linker.analyseDepRelation(buildDir);
+            }
+        } else {
             usedFiles = null;
         }
-        del([distDir + '/**/*'], {force: true}).then(function () {
-            gulp.src(buildDir + '/**/*')
+
+        del([_path.resolve(distDir, '**/*')], {force: true}).then(function () {
+            gulp.src(_path.resolve(buildDir, '**/*'))
                 .pipe(linker.excludeUnusedFiles(usedFiles))
                 .pipe(linker.excludeEmptyDir())
                 .pipe(gulp.dest(distDir))
@@ -256,25 +257,72 @@ var tasks = {
                 });
         });
     },
-    'common_tasks': function (done) {
-        runSequence(
-            'prepare_build',
-            'replace_const',
-            'join_include',
-            'sprite_crafter',
-            'prefix_crafter',
-            'allot_link',
-            'optimize_image',
-            'do_dist',
-            done
-        );
+    // 上传：
+    // - 将发布文件夹中的文件发到测试服务器
+    'do_upload': function (done) {
+        var prjName = params.prjName,
+            distDir = params.distDir,
+
+            alOpt = params.alOpt,
+            pageDir = alOpt.pageDir,
+            staticDir = alOpt.staticDir,
+
+            uploadPage = config.uploadPage,
+            uploadForm = config.uploadForm,
+            uploadCallback = config.uploadCallback,
+            concurrentLimit = config.concurrentLimit;
+
+        var uploader = new FileUploader({
+            projectName: prjName,
+            pageDir: alOpt.allot ? _path.resolve(distDir, pageDir) : distDir,
+            staticDir: alOpt.allot ? _path.resolve(distDir, staticDir) : distDir,
+            uploadPage: uploadPage,
+            uploadForm: uploadForm,
+            uploadCallback: uploadCallback,
+            concurrentLimit: concurrentLimit
+        });
+
+        var timer = new Timer();
+        console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务开始……');
+
+        gulp.src(_path.resolve(distDir, '**/*'))
+            .pipe(plumber({
+                'errorHandler': function (err) {
+                    console.log('Error: ', err);
+                }
+            }))
+            .pipe(uploader.appendFile())
+            .on('end', function () {
+                uploader.start(function onProgress(err, filePath, response, results) {
+                    // 完成一个文件时
+                    var sof = !err && uploadCallback(response),
+
+                        //relativePath = _path.relative(distDir, filePath),
+                        succeedCount = results.succeed.length + sof,
+                        failedCount = results.failed.length + !sof,
+                        totalCount = results.totalCount;
+                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务进度：' +
+                        totalCount + '/' + succeedCount + '/' + failedCount);
+                    //console.log('服务器回复：', response);
+                    return sof;
+                }, function onComplete(results) {
+                    // 完成所有文件时
+                    var succeedCount = results.succeed.length,
+                        failedCount = results.failed.length,
+                        totalCount = results.totalCount,
+                        resText = '，共' + totalCount + '个文件，成功' + succeedCount + '个' +
+                            (failedCount ? '，失败' + failedCount + '个' : '');
+                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务结束' + resText + '（' + timer.getTime() + 'ms）');
+                    done();
+                });
+            });
     }
 };
 
 module.exports = {
     registerTasks: function (_gulp) {
         gulp = _gulp;
-        runSequence = _runSequence.use(gulp);
+        runSequenceUseGulp = runSequence.use(gulp);
 
         for (var taskName in tasks) {
             if (!tasks.hasOwnProperty(taskName)) {
@@ -282,6 +330,9 @@ module.exports = {
             }
             gulp.task(taskName, tasks[taskName]);
         }
+    },
+    config: function (_config) {
+        config = _config;
     },
     process: function (_params, cb) {
         params = _params;
@@ -307,9 +358,12 @@ module.exports = {
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务开始……');
-        runSequence(params.taskName, function () {
-            console.log(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务结束。（' + timer.getTime() + 'ms）');
+
+        var tasks = params.tasks || [];
+        tasks.push(function () {
+            console.log(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务结束。（共计' + timer.getTime() + 'ms）');
             cb && cb();
         });
+        runSequenceUseGulp.apply(null, tasks);
     }
 };
