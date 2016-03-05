@@ -106,11 +106,12 @@ exports.getFilesOfDir = function (dir, pat, rec) {
         if (stat.isFile()) {
             var ext = _path.extname(fp),
                 basename = _path.basename(fp);
-            if (pat[0] == '*' || (pat.indexOf && pat.indexOf(ext) >= 0) || (pat.test && pat.test(basename))) {
+            if (pat[0] === '*' ||                               // Any
+                (pat.indexOf && pat.indexOf(ext) >= 0) ||       // Array
+                (pat.test && pat.test(basename))) {             // RegExp
                 files.push(fp);
             }
-        }
-        else if (stat.isDirectory() && child[0] !== '_' && rec) {
+        } else if (stat.isDirectory() && child.charAt(0) !== '_' && rec) {
             files = files.concat(exports.getFilesOfDir(fp, pat, rec));
         }
     }

@@ -46,7 +46,7 @@ FileLinker.prototype = {
                 return;
             }
             var basename = _path.basename(entryFile);
-            if (basename[0] === '_') {
+            if (basename.charAt(0) === '_') {
                 return;
             }
             var depList = self._getFileDep(entryFile, cache);
