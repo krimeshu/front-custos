@@ -79,6 +79,7 @@ FileUploader.prototype = {
                 't=' + new Date().getTime();
 
             var _upload = function (done) {
+                //throw new Error('测试错误。');
                 var request = Request({
                     url: uploadPage,
                     method: 'POST',

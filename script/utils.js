@@ -92,30 +92,34 @@ exports.makeSureDir = function (dirPath) {
 };
 
 exports.getFilesOfDir = function (dir, pat, rec) {
-    var files = [],
-        children = _fs.readdirSync(dir);
+    try {
+        var files = [],
+            children = _fs.readdirSync(dir);
 
-    if (typeof(pat) === 'string') {
-        pat = pat.split('|');
-    }
-
-    for (var i = 0; i < children.length; i++) {
-        var child = children[i],
-            fp = _path.resolve(dir, child),
-            stat = _fs.statSync(fp);
-        if (stat.isFile()) {
-            var ext = _path.extname(fp),
-                basename = _path.basename(fp);
-            if (pat[0] === '*' ||                               // Any
-                (pat.indexOf && pat.indexOf(ext) >= 0) ||       // Array
-                (pat.test && pat.test(basename))) {             // RegExp
-                files.push(fp);
-            }
-        } else if (stat.isDirectory() && child.charAt(0) !== '_' && rec) {
-            files = files.concat(exports.getFilesOfDir(fp, pat, rec));
+        if (typeof(pat) === 'string') {
+            pat = pat.split('|');
         }
+
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i],
+                fp = _path.resolve(dir, child),
+                stat = _fs.statSync(fp);
+            if (stat.isFile()) {
+                var ext = _path.extname(fp),
+                    basename = _path.basename(fp);
+                if (pat[0] === '*' ||                               // Any
+                    (pat.indexOf && pat.indexOf(ext) >= 0) ||       // Array
+                    (pat.test && pat.test(basename))) {             // RegExp
+                    files.push(fp);
+                }
+            } else if (stat.isDirectory() && child.charAt(0) !== '_' && rec) {
+                files = files.concat(exports.getFilesOfDir(fp, pat, rec));
+            }
+        }
+        return files;
+    } catch (e) {
+        return [];
     }
-    return files;
 };
 // 文件夹相关 ED
 

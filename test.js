@@ -8,9 +8,10 @@ var gulp = require('gulp'),
 
 frontCustos.registerTasks(gulp);
 frontCustos.config({
+    outputDir: './dist',
     htmlEnhanced: false,
     delUnusedFiles: true,
-    uploadPage: 'http://admin.ac.oa.com/uploadDevFile.php',
+    uploadPage: 'http://test.oa.com/uploadDevFile.php',
     uploadForm: function (fileStream, projectName, relativeName) {
         var utils = require('./script/utils.js'),
             prefix = (relativeName.split('/').slice(0, -1));

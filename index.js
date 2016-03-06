@@ -80,6 +80,11 @@ var tasks = {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'join_include 任务开始……');
         var fileList = includer.analyseDepRelation(buildDir);
         gulp.src(fileList, {base: buildDir})
+            .pipe(plumber({
+                'errorHandler': function (err) {
+                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'join_include 异常: ', err);
+                }
+            }))
             .pipe(includer.handleFile())
             .pipe(gulp.dest(buildDir))
             .on('end', function () {
@@ -288,7 +293,7 @@ var tasks = {
         gulp.src(_path.resolve(distDir, '**/*'))
             .pipe(plumber({
                 'errorHandler': function (err) {
-                    console.log('Error: ', err);
+                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 异常: ', err);
                 }
             }))
             .pipe(uploader.appendFile())
@@ -297,7 +302,7 @@ var tasks = {
                     // 完成一个文件时
                     var sof = !err && uploadCallback(response),
 
-                        //relativePath = _path.relative(distDir, filePath),
+                    //relativePath = _path.relative(distDir, filePath),
                         succeedCount = results.succeed.length + sof,
                         failedCount = results.failed.length + !sof,
                         totalCount = results.totalCount;
@@ -340,7 +345,7 @@ module.exports = {
         // 提取项目名称和构建、发布文件夹路径
         params.prjName = _path.basename(params.srcDir);
         params.buildDir = _path.resolve(_os.tmpdir(), 'FC_BuildDir', params.prjName);
-        params.distDir = _path.resolve('D:\\FC_Output', params.prjName);
+        params.distDir = _path.resolve(config.outputDir, params.prjName);
 
         // 生成项目常量并替换参数中的项目常量
         var constFields = {
