@@ -1,15 +1,17 @@
 # front-custos
 
-This is a experimental tool kit for front-end building. For running gulp tasks with diffrent projects, without writing custom files again and again.
+一个前端开发的试验工具，用于懒得或不会写 gulpfile 时，能快速对不同项目生成常用的 gulp 任务。
 
-## How to use
+## 安装方法
+
+切换到所在目录，执行`npm install`。
 
 ```bash
 cd path/to/front-custos
 npm install
 ```
 
-Check if it is installed successfully.
+运行测试项目检查是否安装完成。
 
 ```bash
 node test
