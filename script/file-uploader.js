@@ -74,7 +74,7 @@ FileUploader.prototype = {
                 relativeDir = _path.relative(isPage ? pageDir : staticDir, filePath).replace(/\\/g, '/'),
 
                 fileStream = _fs.createReadStream(filePath),
-                formMap = uploadForm(fileStream, projectName, relativeDir);
+                formMap = uploadForm(fileStream, relativeDir, projectName);
             uploadPage += (uploadPage.indexOf('?') < 0 ? '?' : '&') +
                 't=' + new Date().getTime();
 

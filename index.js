@@ -140,9 +140,11 @@ var tasks = {
         var buildDir = params.buildDir,
             alOpt = params.alOpt,
 
-            htmlEnhanced = config.htmlEnhanced;
+            htmlEnhanced = config.htmlEnhanced,
+            flattenMap = config.flattenMap;
 
         alOpt.src = buildDir;
+        alOpt.flattenMap = flattenMap;
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link 任务开始……');
@@ -267,13 +269,13 @@ var tasks = {
     'do_upload': function (done) {
         var prjName = params.prjName,
             distDir = params.distDir,
+            uploadPage = params.uploadPage,
+            uploadForm = params.uploadForm,
 
             alOpt = params.alOpt,
             pageDir = alOpt.pageDir,
             staticDir = alOpt.staticDir,
 
-            uploadPage = config.uploadPage,
-            uploadForm = config.uploadForm,
             uploadCallback = config.uploadCallback,
             concurrentLimit = config.concurrentLimit;
 

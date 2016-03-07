@@ -11,22 +11,17 @@ frontCustos.config({
     outputDir: './dist',
     htmlEnhanced: false,
     delUnusedFiles: true,
-    uploadPage: 'http://test.oa.com/uploadDevFile.php',
-    uploadForm: function (fileStream, projectName, relativeName) {
-        var utils = require('./script/utils.js'),
-            prefix = (relativeName.split('/').slice(0, -1));
-        prefix.splice(0, 0, projectName);
-        if (!utils.isPage(relativeName)) {
-            prefix.pop();
-        }
-        return {
-            'fileName': relativeName,
-            'prefix': prefix.join('/'),
-            'myfile': fileStream
-        };
-    },
     uploadCallback: function (response) {
         return /^上传成功/.test(response);
+    },
+    flattenMap: {
+        page: '',
+        style: 'css',
+        script: 'js',
+        image: 'images',
+        font: 'font',
+        audio: 'audio',
+        other: 'raw'
     },
     concurrentLimit: 1
 });
@@ -47,18 +42,23 @@ frontCustos.process({
         staticDir: 'static/{PROJECT_NAME}',
         staticUrlHead: 'http://static.foo.com/{PROJECT_NAME}',
         flatten: true,
-        flattenMap: {
-            page: '',
-            style: 'css',
-            script: 'js',
-            image: 'images',
-            font: 'font',
-            audio: 'audio',
-            other: 'raw'
-        },
         hashLink: true
     },
     keepOldCopy: false,
+    uploadPage: 'http://test.oa.com/uploadDevFile.php',
+    uploadForm: function (fileStream, relativeName, projectName) {
+        var utils = require('./script/utils.js'),
+            prefix = (relativeName.split('/').slice(0, -1));
+        prefix.splice(0, 0, projectName);
+        if (!utils.isPage(relativeName)) {
+            prefix.pop();
+        }
+        return {
+            'fileName': relativeName,
+            'prefix': prefix.join('/'),
+            'myfile': fileStream
+        };
+    },
     tasks: [
         'prepare_build',
         'replace_const',
