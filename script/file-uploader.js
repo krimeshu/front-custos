@@ -2,7 +2,8 @@
  * Created by krimeshu on 2016/3/1.
  */
 
-var _fs = require('fs'),
+var _os = require('os'),
+    _fs = require('fs'),
     _path = require('path'),
 
     Through2 = require('through2'),
@@ -15,6 +16,8 @@ var FileUploader = function (opts) {
         projectName = opts.projectName,
         pageDir = opts.pageDir,
         staticDir = opts.staticDir,
+        uploadAll = opts.uploadAll,
+        uploadDelta = opts.uploadDelta,
         uploadPage = opts.uploadPage,
         uploadForm = opts.uploadForm,
         concurrentLimit = opts.concurrentLimit || 1;
@@ -23,13 +26,54 @@ var FileUploader = function (opts) {
     self.projectName = projectName;
     self.pageDir = pageDir;
     self.staticDir = staticDir;
+    self.uploadAll = uploadAll;
+    self.uploadDelta = uploadDelta;
     self.uploadPage = uploadPage;
     self.uploadForm = uploadForm;
     self.concurrentLimit = concurrentLimit;
     self.concurrentCount = 0;
+
+    self._loadHistory();
 };
 
 FileUploader.prototype = {
+    _loadHistory: function () {
+        var self = this,
+            filePath = _path.resolve(_os.tmpdir(), 'FC_UploadHistory'),
+            history = {};
+        try {
+            var fileContent = _fs.readFileSync(filePath).toString();
+            history = JSON.parse(fileContent);
+        } catch (e) {
+            console.log('FileUploader - 解析上传历史文件时出现异常：\n', e);
+        }
+        self._history = history;
+    },
+    _saveHistory: function () {
+        var self = this,
+            filePath = _path.resolve(_os.tmpdir(), 'FC_UploadHistory'),
+            history = self._history;
+        try {
+            var fileContent = JSON.stringify(history);
+            _fs.writeFileSync(filePath, fileContent)
+        } catch (e) {
+            console.log('FileUploader - 保存上传历史文件时出现异常。\n', e);
+        }
+    },
+    _isFileUnchanged: function (filePath) {
+        var self = this,
+            history = self._history || {},
+            currentHash = Utils.md5(filePath, true),
+            historyHash = history[filePath];
+        return currentHash !== historyHash;
+    },
+    _updateFileHash: function (filePath) {
+        var self = this,
+            history = self._history || {},
+            currentHash = Utils.md5(filePath, true);
+        history[filePath] = currentHash;
+        self._saveHistory();
+    },
     appendFile: function () {
         var self = this;
 
@@ -47,6 +91,7 @@ FileUploader.prototype = {
     },
     start: function (onProgress, onComplete) {
         var self = this,
+            uploadAll = self.uploadAll,
             uploadForm = self.uploadForm,
             uploadQueue = self.uploadQueue;
 

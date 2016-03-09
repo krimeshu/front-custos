@@ -269,12 +269,16 @@ var tasks = {
     'do_upload': function (done) {
         var prjName = params.prjName,
             distDir = params.distDir,
-            uploadPage = params.uploadPage,
-            uploadForm = params.uploadForm,
 
             alOpt = params.alOpt,
             pageDir = alOpt.pageDir,
             staticDir = alOpt.staticDir,
+
+            upOpt = params.upOpt,
+
+            uploadDelta = upOpt.delta,
+            uploadPage = upOpt.page,
+            uploadForm = upOpt.form,
 
             uploadCallback = config.uploadCallback,
             concurrentLimit = config.concurrentLimit;
@@ -283,9 +287,9 @@ var tasks = {
             projectName: prjName,
             pageDir: alOpt.allot ? _path.resolve(distDir, pageDir) : distDir,
             staticDir: alOpt.allot ? _path.resolve(distDir, staticDir) : distDir,
+            uploadDelta: uploadDelta,
             uploadPage: uploadPage,
             uploadForm: uploadForm,
-            uploadCallback: uploadCallback,
             concurrentLimit: concurrentLimit
         });
 

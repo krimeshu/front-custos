@@ -29,6 +29,7 @@ frontCustos.config({
 frontCustos.process({
     srcDir: './example/',
     version: '0.1.0',
+    keepOldCopy: false,
     scOpt: {
         "useRatio": 1,
         "useRem": 1
@@ -44,20 +45,20 @@ frontCustos.process({
         flatten: true,
         hashLink: true
     },
-    keepOldCopy: false,
-    uploadPage: 'http://test.oa.com/uploadDevFile.php',
-    uploadForm: function (fileStream, relativeName, projectName) {
-        var utils = require('./script/utils.js'),
-            prefix = (relativeName.split('/').slice(0, -1));
-        prefix.splice(0, 0, projectName);
-        if (!utils.isPage(relativeName)) {
-            prefix.pop();
+    upOpt: {
+        delta: true,
+        page: 'http://test.oa.com/uploadDevFile.php',
+        form: function (fileStream, relativeName, projectName) {
+            var suffix = (relativeName.substr(relativeName.lastIndexOf('.'))),
+                prefix = (relativeName.split('/').slice(0, -1));
+            (['.html', '.shtml', '.php'].indexOf(suffix) < 0) && prefix.pop();
+            prefix.splice(0, 0, projectName);
+            return {
+                'fileName': relativeName,
+                'prefix': prefix.join('/'),
+                'myfile': fileStream
+            };
         }
-        return {
-            'fileName': relativeName,
-            'prefix': prefix.join('/'),
-            'myfile': fileStream
-        };
     },
     tasks: [
         'prepare_build',
