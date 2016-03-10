@@ -36,12 +36,20 @@ var FileUploader = function (opts) {
 
 FileUploader.prototype = {
     _getHistoryFilePath: function () {
-        return _path.resolve(_os.tmpdir(), 'FC_UploadHistory.json');
+        var self = this,
+            projectName = self.projectName,
+            fileDir = './FC_UploadHistory',
+            fileName = Utils.md5(projectName);
+        Utils.makeSureDir(fileDir);
+        return _path.resolve(fileDir, fileName + '.json');
     },
     _loadHistory: function () {
         var self = this,
             filePath = self._getHistoryFilePath(),
-            history = {};
+            history = {
+                projectName: self.projectName,
+                data: {}
+            };
         try {
             var fileContent = _fs.existsSync(filePath) ?
                 _fs.readFileSync(filePath).toString() :
@@ -66,15 +74,17 @@ FileUploader.prototype = {
     _isFileUnchanged: function (filePath) {
         var self = this,
             history = self._history || {},
+            data = history.data,
             currentHash = Utils.md5(filePath, true),
-            historyHash = history[filePath];
+            historyHash = data[filePath];
         return currentHash === historyHash;
     },
     _updateFileHash: function (filePath) {
         var self = this,
             history = self._history || {},
+            data = history.data,
             currentHash = Utils.md5(filePath, true);
-        history[filePath] = currentHash;
+        data[filePath] = currentHash;
         self._saveHistory();
     },
     appendFile: function () {
