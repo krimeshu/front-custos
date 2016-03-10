@@ -283,11 +283,15 @@ var tasks = {
             uploadCallback = config.uploadCallback,
             concurrentLimit = config.concurrentLimit;
 
+        if (typeof uploadCallback === 'string') {
+            uploadCallback = new Function('return ' + uploadCallback)();
+        }
+
         var uploader = new FileUploader({
             projectName: prjName,
             pageDir: alOpt.allot ? _path.resolve(distDir, pageDir) : distDir,
             staticDir: alOpt.allot ? _path.resolve(distDir, staticDir) : distDir,
-            uploadDelta: uploadDelta,
+            uploadAll: !uploadDelta,
             uploadPage: uploadPage,
             uploadForm: uploadForm,
             concurrentLimit: concurrentLimit
@@ -311,18 +315,22 @@ var tasks = {
                     //relativePath = _path.relative(distDir, filePath),
                         succeedCount = results.succeed.length + sof,
                         failedCount = results.failed.length + !sof,
-                        totalCount = results.totalCount;
+                        queueCount = results.queue.length;
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务进度：' +
-                        totalCount + '/' + succeedCount + '/' + failedCount);
+                        queueCount + '/' + succeedCount + '/' + failedCount);
                     //console.log('服务器回复：', response);
                     return sof;
                 }, function onComplete(results) {
                     // 完成所有文件时
                     var succeedCount = results.succeed.length,
                         failedCount = results.failed.length,
+                        queueCount = results.queue.length,
+                        unchangedCount = results.unchanged.length,
                         totalCount = results.totalCount,
-                        resText = '，共' + totalCount + '个文件，成功' + succeedCount + '个' +
-                            (failedCount ? '，失败' + failedCount + '个' : '');
+                        resText = '，上传' + queueCount + '个文件，成功' + succeedCount + '个' +
+                            (failedCount ? '，失败' + failedCount + '个' : '') +
+                            '。总共' + totalCount + '个文件' +
+                            (unchangedCount ? '，其中' + unchangedCount + '个无变更。' : '。');
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务结束' + resText + '（' + timer.getTime() + 'ms）');
                     done();
                 });

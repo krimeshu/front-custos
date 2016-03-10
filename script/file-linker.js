@@ -339,9 +339,8 @@ FileLinker.prototype = {
                     _newFile;
 
                 if (allot && !_isPage && !fromCss && staticUrlHead) {
-                    _newFile = staticUrlHead +
-                        (/\/$/.test(staticUrlHead) ? '' : '/') +
-                        _fileRela;
+                    var _sp = staticUrlHead.charAt(staticUrlHead.length - 1) !== '/' ? '/' : '';
+                    _newFile = staticUrlHead + _sp + _fileRela;
                 } else {
                     _newFile = _path.relative(_path.dirname(newFilePath), _newFilePath);
                 }

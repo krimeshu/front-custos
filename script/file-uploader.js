@@ -17,7 +17,6 @@ var FileUploader = function (opts) {
         pageDir = opts.pageDir,
         staticDir = opts.staticDir,
         uploadAll = opts.uploadAll,
-        uploadDelta = opts.uploadDelta,
         uploadPage = opts.uploadPage,
         uploadForm = opts.uploadForm,
         concurrentLimit = opts.concurrentLimit || 1;
@@ -27,7 +26,6 @@ var FileUploader = function (opts) {
     self.pageDir = pageDir;
     self.staticDir = staticDir;
     self.uploadAll = uploadAll;
-    self.uploadDelta = uploadDelta;
     self.uploadPage = uploadPage;
     self.uploadForm = uploadForm;
     self.concurrentLimit = concurrentLimit;
@@ -37,12 +35,17 @@ var FileUploader = function (opts) {
 };
 
 FileUploader.prototype = {
+    _getHistoryFilePath: function () {
+        return _path.resolve(_os.tmpdir(), 'FC_UploadHistory.json');
+    },
     _loadHistory: function () {
         var self = this,
-            filePath = _path.resolve(_os.tmpdir(), 'FC_UploadHistory'),
+            filePath = self._getHistoryFilePath(),
             history = {};
         try {
-            var fileContent = _fs.readFileSync(filePath).toString();
+            var fileContent = _fs.existsSync(filePath) ?
+                _fs.readFileSync(filePath).toString() :
+                JSON.stringify(history);
             history = JSON.parse(fileContent);
         } catch (e) {
             console.log('FileUploader - 解析上传历史文件时出现异常：\n', e);
@@ -51,7 +54,7 @@ FileUploader.prototype = {
     },
     _saveHistory: function () {
         var self = this,
-            filePath = _path.resolve(_os.tmpdir(), 'FC_UploadHistory'),
+            filePath = self._getHistoryFilePath(),
             history = self._history;
         try {
             var fileContent = JSON.stringify(history);
@@ -65,7 +68,7 @@ FileUploader.prototype = {
             history = self._history || {},
             currentHash = Utils.md5(filePath, true),
             historyHash = history[filePath];
-        return currentHash !== historyHash;
+        return currentHash === historyHash;
     },
     _updateFileHash: function (filePath) {
         var self = this,
@@ -98,61 +101,77 @@ FileUploader.prototype = {
         if (typeof uploadForm === 'string') {
             uploadForm = new Function('return ' + uploadForm)();
         }
-        if (typeof uploadQueue === 'string') {
-            uploadQueue = new Function('return ' + uploadQueue)();
-        }
 
-        self.uploadResult = {
+        var res = self.uploadResult = {
             succeed: [],
             failed: [],
+            unchanged: [],
             totalCount: uploadQueue.length
         };
 
-        //console.log(uploadQueue);
-        uploadQueue.forEach(function (filePath) {
-            var uploadPage = self.uploadPage,
-                projectName = self.projectName,
-                pageDir = self.pageDir,
-                staticDir = self.staticDir,
-
-                isPage = Utils.isPage(filePath),
-                relativeDir = _path.relative(isPage ? pageDir : staticDir, filePath).replace(/\\/g, '/'),
-
-                fileStream = _fs.createReadStream(filePath),
-                formMap = uploadForm(fileStream, relativeDir, projectName);
-            uploadPage += (uploadPage.indexOf('?') < 0 ? '?' : '&') +
-                't=' + new Date().getTime();
-
-            var _upload = function (done) {
-                //throw new Error('测试错误。');
-                var request = Request({
-                    url: uploadPage,
-                    method: 'POST',
-                    timeout: 10000,
-                    headers: {
-                        connection: 'keep-alive'
-                    }
-                }, function (err, response, body) {
-                    var res = self.uploadResult;
-                    if (!err && (!onProgress || onProgress(err, filePath, body, res))) {
-                        res.succeed.push(filePath);
-                    } else {
-                        res.failed.push(filePath);
-                    }
-                    if (res.succeed.length + res.failed.length >= res.totalCount) {
-                        onComplete && onComplete(res);
-                    }
-                    done();
-                });
-                var form = request.form();
-                for (var key in formMap) {
-                    if (formMap.hasOwnProperty(key)) {
-                        form.append(key, formMap[key]);
-                    }
+        if (!uploadAll) {
+            uploadQueue.forEach(function (filePath) {
+                if (self._isFileUnchanged(filePath)) {
+                    res.unchanged.push(filePath);
                 }
-            };
-            self.doUpload(_upload);
-        });
+            });
+            res.unchanged.forEach(function (filePath) {
+                var pos = uploadQueue.indexOf(filePath);
+                uploadQueue.splice(pos, 1);
+            });
+        }
+
+        res.queue = uploadQueue;
+
+        if (uploadQueue.length <= 0) {
+            onComplete && onComplete(res);
+        } else {
+            uploadQueue.forEach(function (filePath) {
+                var uploadPage = self.uploadPage,
+                    projectName = self.projectName,
+                    pageDir = self.pageDir,
+                    staticDir = self.staticDir,
+
+                    isPage = Utils.isPage(filePath),
+                    relativeDir = _path.relative(isPage ? pageDir : staticDir, filePath).replace(/\\/g, '/'),
+
+                    fileStream = _fs.createReadStream(filePath),
+                    formMap = uploadForm(fileStream, relativeDir, projectName);
+                uploadPage += (uploadPage.indexOf('?') < 0 ? '?' : '&') +
+                    't=' + new Date().getTime();
+
+                var _upload = function (done) {
+                    //throw new Error('测试错误。');
+                    var request = Request({
+                        url: uploadPage,
+                        method: 'POST',
+                        timeout: 10000,
+                        headers: {
+                            connection: 'keep-alive'
+                        }
+                    }, function (err, response, body) {
+                        var res = self.uploadResult;
+                        if (!err && (!onProgress || onProgress(err, filePath, body, res))) {
+                            self._updateFileHash(filePath);
+                            res.succeed.push(filePath);
+                        } else {
+                            res.failed.push(filePath);
+                        }
+                        if (res.succeed.length + res.failed.length >= res.totalCount) {
+                            onComplete && onComplete(res);
+                        }
+                        done();
+                    });
+                    var form = request.form();
+                    for (var key in formMap) {
+                        if (formMap.hasOwnProperty(key)) {
+                            form.append(key, formMap[key]);
+                        }
+                    }
+                };
+                self.doUpload(_upload);
+            });
+        }
     },
     doUpload: function (_upload) {
         var self = this,
