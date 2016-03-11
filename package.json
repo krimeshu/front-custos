@@ -1,12 +1,12 @@
 {
   "name": "front-custos",
   "version": "0.2.8",
-  "description": "",
+  "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
     "test": "node test"
   },
-  "author": "",
+  "author": "krimeshu",
   "license": "MIT",
   "devDependencies": {
     "gulp": "^3.9.1"
@@ -28,6 +28,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Moonshell/front-custos"
+    "url": "https://github.com/Moonshell/front-custos.git"
   }
 }

@@ -281,10 +281,14 @@ var tasks = {
             uploadForm = upOpt.form,
 
             uploadCallback = config.uploadCallback,
-            concurrentLimit = config.concurrentLimit;
+            concurrentLimit = config.concurrentLimit | 0;
 
         if (typeof uploadCallback === 'string') {
             uploadCallback = new Function('return ' + uploadCallback)();
+        }
+
+        if (concurrentLimit < 1) {
+            concurrentLimit = Infinity;
         }
 
         var uploader = new FileUploader({
