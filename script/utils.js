@@ -6,6 +6,32 @@ var _fs = require('fs'),
     _path = require('path'),
     _crypto = require('crypto');
 
+exports.deepCopy = function (origin, _copy) {
+    var self = arguments.callee,
+        type = Object.prototype.toString.call(origin),
+        copy = origin;
+    switch (type) {
+        case '[object Object]':
+            copy = _copy || {};
+            for (var k in origin) {
+                if (origin.hasOwnProperty(k)) {
+                    copy[k] = self(origin[k]);
+                }
+            }
+            break;
+        case '[object Array]':
+            copy = _copy || [];
+            for (var i = 0, l = origin.length; i < l; i++) {
+                copy[i] = self(origin[i]);
+            }
+            break;
+        case '[object Function]':
+            copy = new Function(origin.toString());
+            break;
+    }
+    return copy;
+};
+
 //计算16位md5
 exports.md5 = function (key, isFile) {
     var md5 = _crypto.createHash('md5');
