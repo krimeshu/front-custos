@@ -22,11 +22,65 @@ var _os = require('os'),
     FileLinker = require('./script/file-linker.js'),
     FileUploader = require('./script/file-uploader.js'),
     SpriteCrafterProxy = require('./script/sprite-crafter-proxy.js'),
-    PrefixCrafterProxy = require('./script/prefix-crafter-proxy.js');
+    PrefixCrafterProxy = require('./script/prefix-crafter-proxy.js'),
 
-var config = {
-        delUnusedFiles: true
+    console = global.console;
+
+module.exports = {
+    registerTasks: function (_gulp) {
+        gulp = _gulp;
+        runSequenceUseGulp = runSequence.use(gulp);
+
+        for (var taskName in tasks) {
+            if (!tasks.hasOwnProperty(taskName)) {
+                continue;
+            }
+            gulp.task(taskName, tasks[taskName]);
+        }
     },
+    config: function (_config) {
+        config = _config;
+    },
+    takeOverConsole: function (_console) {
+        if (_console.log && _console.info && _console.warn && _console.error) {
+            console = _console;
+        }
+    },
+    process: function (_params, cb) {
+        params = _params;
+
+        // 提取项目名称和构建、发布文件夹路径
+        params.prjName = _path.basename(params.srcDir);
+        params.buildDir = _path.resolve(_os.tmpdir(), 'FC_BuildDir', params.prjName);
+        params.distDir = _path.resolve(config.outputDir, params.prjName);
+
+        // 生成项目常量并替换参数中的项目常量
+        var constFields = {
+            PROJECT: params.buildDir,
+            PROJECT_NAME: params.prjName,
+            VERSION: params.version
+        }, replacer = new ConstReplacer(constFields);
+        replacer.doReplace(params);
+        params.constFields = constFields;
+
+        // 保留旧版副本时，生成路径中加上版本号
+        if (params.keepOldCopy) {
+            params.distDir = _path.resolve(params.distDir, params.version);
+        }
+
+        var timer = new Timer();
+        console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务开始……');
+
+        var tasks = params.tasks || [];
+        tasks.push(function () {
+            console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务结束。（共计' + timer.getTime() + 'ms）');
+            cb && cb();
+        });
+        runSequenceUseGulp.apply(null, tasks);
+    }
+};
+
+var config = {delUnusedFiles: true},
     params = {};
 
 var tasks = {
@@ -41,6 +95,11 @@ var tasks = {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'prepare_build 任务开始……');
         del([_path.resolve(buildDir, '**/*')], {force: true}).then(function () {
             gulp.src(_path.resolve(srcDir, '**/*'))
+                .pipe(plumber({
+                    'errorHandler': function (err) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'prepare_build 异常: ', err);
+                    }
+                }))
                 .pipe(gulp.dest(buildDir))
                 .on('end', function () {
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'prepare_build 任务结束。（' + timer.getTime() + 'ms）');
@@ -61,6 +120,11 @@ var tasks = {
         var replacer = new ConstReplacer(constFields);
         //replacer.doReplace(params);
         gulp.src(pattern)
+            .pipe(plumber({
+                'errorHandler': function (err) {
+                    console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'replace_const 异常: ', err);
+                }
+            }))
             .pipe(replacer.handleFile())
             .pipe(gulp.dest(buildDir))
             .on('end', function () {
@@ -73,7 +137,7 @@ var tasks = {
     'join_include': function (done) {
         var buildDir = params.buildDir;
         var includer = new FileIncluder(function (err) {
-            console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'join_include: ', err);
+            console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'join_include 异常: ', err);
         });
 
         var timer = new Timer();
@@ -82,7 +146,7 @@ var tasks = {
         gulp.src(fileList, {base: buildDir})
             .pipe(plumber({
                 'errorHandler': function (err) {
-                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'join_include 异常: ', err);
+                    console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'join_include 异常: ', err);
                 }
             }))
             .pipe(includer.handleFile())
@@ -105,6 +169,11 @@ var tasks = {
             maps = {};
         scOpt.src = buildDir;
         gulp.src(pattern)
+            .pipe(plumber({
+                'errorHandler': function (err) {
+                    console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'sprite_crafter 异常: ', err);
+                }
+            }))
             .pipe(SpriteCrafterProxy.analyseUsedImageMap(files, maps))
             .pipe(gulp.dest(buildDir))
             .on('end', function () {
@@ -126,6 +195,11 @@ var tasks = {
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'prefix_crafter 任务开始……');
         gulp.src(pattern)
+            .pipe(plumber({
+                'errorHandler': function (err) {
+                    console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'prefix_crafter 异常: ', err);
+                }
+            }))
             .pipe(PrefixCrafterProxy.process(pcOpt))
             .pipe(gulp.dest(buildDir))
             .on('end', function () {
@@ -152,12 +226,17 @@ var tasks = {
         var linker = new FileLinker({
             htmlEnhanced: htmlEnhanced
         }, function (err) {
-            console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link:process: ', err);
+            console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link:process 异常: ', err);
         });
         var fileAllotMap = {},                               // 用于记录文件分发前后的路径关系
             usedFiles = linker.analyseDepRelation(buildDir); //记录分发前的文件依赖表
         // 1. 将构建文件夹中的文件进行分发和重链接，生成到分发文件夹中
         gulp.src(_path.resolve(buildDir, '**/*'))
+            .pipe(plumber({
+                'errorHandler': function (err) {
+                    console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link 异常: ', err);
+                }
+            }))
             .pipe(linker.handleFile(alOpt, fileAllotMap))
             .pipe(gulp.dest(buildDir))
             .on('end', function () {
@@ -202,6 +281,11 @@ var tasks = {
         var buildDir = params.buildDir;
 
         gulp.src(_path.resolve(buildDir, '**/*.png'))
+            .pipe(plumber({
+                'errorHandler': function (err) {
+                    console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'optimize_image:png 异常: ', err);
+                }
+            }))
             .pipe(cache(pngquant({
                 quality: '65-80',
                 speed: 4
@@ -215,6 +299,11 @@ var tasks = {
         var buildDir = params.buildDir;
 
         gulp.src(_path.resolve(buildDir, '**/*.{jpg,gif}'))
+            .pipe(plumber({
+                'errorHandler': function (err) {
+                    console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'optimize_image:other 异常: ', err);
+                }
+            }))
             .pipe(cache(imagemin({
                 progressive: true,
                 interlaced: true
@@ -241,7 +330,7 @@ var tasks = {
         var linker = new FileLinker({
             htmlEnhanced: htmlEnhanced                                 // php代码处理有误，关闭 cheerio 解析
         }, function (err) {
-            console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist: ', err);
+            console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist: 异常', err);
         });
 
         //console.log('usedFiles:', usedFiles);
@@ -255,6 +344,11 @@ var tasks = {
 
         del([_path.resolve(distDir, '**/*')], {force: true}).then(function () {
             gulp.src(_path.resolve(buildDir, '**/*'))
+                .pipe(plumber({
+                    'errorHandler': function (err) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist 异常: ', err);
+                    }
+                }))
                 .pipe(linker.excludeUnusedFiles(usedFiles))
                 .pipe(linker.excludeEmptyDir())
                 .pipe(gulp.dest(distDir))
@@ -307,7 +401,7 @@ var tasks = {
         gulp.src(_path.resolve(distDir, '**/*'))
             .pipe(plumber({
                 'errorHandler': function (err) {
-                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 异常: ', err);
+                    console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 异常: ', err);
                 }
             }))
             .pipe(uploader.appendFile())
@@ -335,58 +429,9 @@ var tasks = {
                             (failedCount ? '，失败' + failedCount + '个' : '') +
                             '。总共' + totalCount + '个文件' +
                             (unchangedCount ? '，其中' + unchangedCount + '个无变更。' : '。');
-                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务结束' + resText + '（' + timer.getTime() + 'ms）');
+                    console.info(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务结束' + resText + '（' + timer.getTime() + 'ms）');
                     done();
                 });
             });
-    }
-};
-
-module.exports = {
-    registerTasks: function (_gulp) {
-        gulp = _gulp;
-        runSequenceUseGulp = runSequence.use(gulp);
-
-        for (var taskName in tasks) {
-            if (!tasks.hasOwnProperty(taskName)) {
-                continue;
-            }
-            gulp.task(taskName, tasks[taskName]);
-        }
-    },
-    config: function (_config) {
-        config = _config;
-    },
-    process: function (_params, cb) {
-        params = _params;
-
-        // 提取项目名称和构建、发布文件夹路径
-        params.prjName = _path.basename(params.srcDir);
-        params.buildDir = _path.resolve(_os.tmpdir(), 'FC_BuildDir', params.prjName);
-        params.distDir = _path.resolve(config.outputDir, params.prjName);
-
-        // 生成项目常量并替换参数中的项目常量
-        var constFields = {
-            PROJECT: params.buildDir,
-            PROJECT_NAME: params.prjName,
-            VERSION: params.version
-        }, replacer = new ConstReplacer(constFields);
-        replacer.doReplace(params);
-        params.constFields = constFields;
-
-        // 保留旧版副本时，生成路径中加上版本号
-        if (params.keepOldCopy) {
-            params.distDir = _path.resolve(params.distDir, params.version);
-        }
-
-        var timer = new Timer();
-        console.log(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务开始……');
-
-        var tasks = params.tasks || [];
-        tasks.push(function () {
-            console.log(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务结束。（共计' + timer.getTime() + 'ms）');
-            cb && cb();
-        });
-        runSequenceUseGulp.apply(null, tasks);
     }
 };
