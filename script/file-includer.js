@@ -30,29 +30,34 @@ FileIncluder.prototype = {
     },
     // 分析源项目的文件包含依赖关系
     analyseDepRelation: function (src) {
-        var self = this,
-            entryFiles = Utils.getFilesOfDir(src, '.html|.shtml|.php|.css|.js', true),
-            finalList = [],
-            cache = {};
-        entryFiles.forEach(function (entryFile) {
-            entryFile = entryFile.replace(/\\/g, '/');
-            if (finalList.indexOf(entryFile) >= 0) {
-                return;
-            }
-            var depList = self._getFileDep(entryFile, cache);
-            depList.forEach(function (depFile) {
-                depFile = depFile.replace(/\\/g, '/');
-                if (finalList.indexOf(depFile) >= 0) {
+        try {
+            var self = this,
+                entryFiles = Utils.getFilesOfDir(src, '.html|.shtml|.php', true),
+                finalList = [],
+                cache = {};
+            entryFiles.forEach(function (entryFile) {
+                entryFile = entryFile.replace(/\\/g, '/');
+                if (finalList.indexOf(entryFile) >= 0) {
                     return;
                 }
-                finalList.push(depFile);
+                var depList = self._getFileDep(entryFile, cache);
+                depList.forEach(function (depFile) {
+                    depFile = depFile.replace(/\\/g, '/');
+                    if (finalList.indexOf(depFile) >= 0) {
+                        return;
+                    }
+                    finalList.push(depFile);
+                });
+                //console.log('================================================================================');
+                //console.log('> FileIncluder.analyseDepRelation - file:', entryFile);
+                //console.log('  Depend on files:', depList);
+                finalList.push(entryFile);
             });
-            //console.log('================================================================================');
-            //console.log('> FileIncluder.analyseDepRelation - file:', entryFile);
-            //console.log('  Depend on files:', depList);
-            finalList.push(entryFile);
-        });
-        return finalList;
+            return finalList;
+        } catch (e) {
+            this.onError && this.onError(e);
+            return [];
+        }
     },
     // 递归获取依赖包含关系表
     _getFileDep: function (file, cache) {
@@ -90,7 +95,8 @@ FileIncluder.prototype = {
                 //console.log('================================================================================');
                 //console.log('> FileIncluder - file:', file.path);
 
-                var filePath = file.path,
+                var basePath = file.base,
+                    filePath = file.path,
                     dirPath = _path.dirname(filePath),
                     isDir = file.isDirectory(),
                     isText = !isDir && Utils.isText(filePath),
@@ -126,6 +132,11 @@ FileIncluder.prototype = {
                         _file = _path.resolve(dirPath, _file);
                     }
                     if (!cache.hasOwnProperty(_file)) {
+                        var information = '无法包含文件：' + _path.relative(basePath, _file),
+                            err = new Error(information);
+                        err.fromFile = _path.relative(basePath, file.path);
+                        err.targetFile = _path.relative(basePath, _file);
+                        self.onError && self.onError(err);
                         continue;
                     }
                     var _content = cache[_file],
