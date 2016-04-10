@@ -25,7 +25,7 @@ FileLinker.prototype = {
     // 用于匹配语法的正则表达式
     _regExp: /(?:\/\/)?[#_]link\(['"]?([^\)'"]+)['"]?\)/gi,
     _regExpHtml: /<(?:link|script|img|audio|video|source)[^>]*(?:href|src|data\-src)\s*=\s*['"]?([^<>'"\$]+)[<>'"\$]?[^>]*>/gi,
-    _regExpCss: /[:\s\b\f\n\t\r]url\(['"]?([^\)'"]+)['"]?\)/gi,
+    _regExpCss: /[,:\s\b\f\n\t\r]url\(['"]?([^\)'"]+)['"]?\)/gi,
     // 获取初始化后的正则表达式
     _getRegExp: function (type) {
         var self = this,
@@ -91,19 +91,14 @@ FileLinker.prototype = {
     },
     // 判断是否可以忽略此链接
     _canIgnoreLink: function (_rawStr) {
-        // 忽略空链接
-        if (!_rawStr.length) {
-            return true;
-        }
-        // 忽略非本地文件
-        if (/^(http|https|data|javascript):/.test(_rawStr)) {
-            return true;
-        }
-        // 忽略模板标记
-        if (/(\{\{|}})/.test(_rawStr) || /(<%|%>)/.test(_rawStr) || /^\$/.test(_rawStr)) {
-            return true;
-        }
-        return false;
+        return (
+            // 忽略空链接
+            !_rawStr.length ||
+            // 忽略非本地文件
+            /^(http|https|data|javascript|about|chrome):/.test(_rawStr) ||
+            // 忽略各种模板标记
+            /((\{\{|}})|(<%|%>)|(\{.*?})|^\$)/.test(_rawStr)
+        );
     },
     // 获取单个文件的引用依赖关系表
     getUsedFiles: function (file, cb) {
@@ -143,7 +138,7 @@ FileLinker.prototype = {
                     var information = '无法链接文件：' + _path.relative(basePath, _file),
                         err = new Error(information);
                     err.fromFile = _path.relative(basePath, file.path);
-                    err.rowNumber = Utils.countLineNumber(content, match);
+                    err.line = Utils.countLineNumber(content, match);
                     err.targetFile = _path.relative(basePath, _file);
                     self.onError && self.onError(err);
                     continue;
@@ -200,7 +195,7 @@ FileLinker.prototype = {
                     var information = '无法链接文件：' + _path.relative(basePath, _file),
                         err = new Error(information);
                     err.fromFile = _path.relative(basePath, file.path);
-                    err.rowNumber = Utils.countLineNumber(content, match);
+                    err.line = Utils.countLineNumber(content, match);
                     err.targetFile = _path.relative(basePath, _file);
                     self.onError && self.onError(err);
                     continue;
@@ -250,7 +245,7 @@ FileLinker.prototype = {
                     var information = '无法链接文件：' + _path.relative(basePath, _file),
                         err = new Error(information);
                     err.fromFile = _path.relative(basePath, file.path);
-                    err.rowNumber = Utils.countLineNumber(content, match);
+                    err.line = Utils.countLineNumber(content, match);
                     err.targetFile = _path.relative(basePath, _file);
                     self.onError && self.onError(err);
                     continue;
