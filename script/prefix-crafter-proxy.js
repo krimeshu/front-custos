@@ -5,7 +5,7 @@
 var Through2 = require('through2');
 
 var PrefixCrafterProxy = {
-    process: function (pcOpt) {
+    process: function (pcOpt, errorHandler) {
         var PrefixCrafter = require('./prefix-crafter.js');
         return Through2.obj(function (file, enc, cb) {
             if (file.isDirectory()) {
@@ -16,7 +16,19 @@ var PrefixCrafterProxy = {
             //if (pcOpt.update) {
             //    content = PrefixCrafter.unprefix(content);
             //}
-            content = PrefixCrafter.addPrefix(content, pcOpt);
+            try {
+                content = PrefixCrafter.addPrefix(content, pcOpt);
+            } catch (e) {
+                if (e.source) {
+                    delete e.source;
+                }
+                if (e.input && e.input.source) {
+                    delete e.input.source;
+                }
+                var err = new Error('样式前缀处理异常');
+                err.detailError = e;
+                errorHandler && errorHandler(err);
+            }
 
             file.contents = new Buffer(content);
 

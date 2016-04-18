@@ -11,6 +11,7 @@ var _os = require('os'),
 
     Utils = require('./script/utils.js'),
     Timer = require('./script/timer.js'),
+    DependencyInjector = require('./script/dependency-injector.js'),
     ConstReplacer = require('./script/const-replacer.js'),
     FileIncluder = require('./script/file-includer.js'),
     FileLinker = require('./script/file-linker.js'),
@@ -20,6 +21,11 @@ var _os = require('os'),
     PrefixCrafterProxy = require('./script/prefix-crafter-proxy.js'),
 
     console = global.console;
+
+var config = {delUnusedFiles: true},
+    params = {},
+    running = false,
+    injector = new DependencyInjector();
 
 module.exports = {
     // 注册相关gulp任务、run-sequence插件
@@ -48,7 +54,27 @@ module.exports = {
     isRunning: function () {
         return running;
     },
-    // 开始处理任务
+    // 根据项目配置计算出项目源目录
+    getSrcDir: function (params) {
+        var projDir = params.projDir || params.srcDir,
+            innerSrcDir = params.innerSrcDir || '';
+        return innerSrcDir ? _path.resolve(projDir, innerSrcDir) : projDir;
+    },
+    // 根据项目配置计算出项目输出目录
+    getDistDir: function (params, outputDir) {
+        var projDir = params.projDir || params.srcDir,
+            projName = _path.basename(params.projDir),
+            innerDistDir = params.innerDistDir || '';
+        return innerDistDir ? _path.resolve(projDir, innerDistDir) : _path.resolve(outputDir, projName);
+    },
+    // 直接执行任务
+    runTasks: function (_params, cb) {
+        params = _params;
+        var tasks = params.tasks || [];
+        tasks.push(cb);
+        runSequenceUseGulp.apply(null, tasks);
+    },
+    // 开始处理并执行任务
     process: function (_params, cb) {
         if (running) {
             return;
@@ -56,45 +82,79 @@ module.exports = {
         running = true;
 
         params = _params;
+        // 处理项目基本配置
+        var projDir = params.projDir || params.srcDir,
+            projName = _path.basename(params.projDir),
+            version = params.version || '';
 
-        // 提取项目名称和构建、发布文件夹路径
-        params.prjName = _path.basename(params.srcDir);
-        params.buildDir = _path.resolve(_os.tmpdir(), 'FC_BuildDir', params.prjName);
-        params.distDir = _path.resolve(config.outputDir, params.prjName);
+        if (!projDir) {
+            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '开始任务前，请指定一个项目目录。');
+            return;
+        }
+
+        // 处理项目源、构建、发布目录路径
+        var buildDir = _path.resolve(_os.tmpdir(), 'FC_BuildDir', projName),
+            srcDir = this.getSrcDir(params),
+            distDir = this.getDistDir(params, config.outputDir);
+
+        params.projName = projName;
+        params.buildDir = buildDir;
+        params.srcDir = srcDir;
+        params.distDir = !params.keepOldCopy ? distDir : _path.resolve(distDir, version);
 
         // 错误集合
         params.errors = [];
 
         // 生成项目常量并替换参数中的项目常量
         var constFields = {
-            PROJECT: params.buildDir,
-            PROJECT_NAME: params.prjName,
-            VERSION: params.version
-        }, replacer = new ConstReplacer(constFields);
+            PROJECT: buildDir,
+            PROJECT_NAME: projName,
+            VERSION: version
+        };
+        var replacer = new ConstReplacer(constFields);
         replacer.doReplace(params);
         params.constFields = constFields;
 
-        // 保留旧版副本时，生成路径中加上版本号
-        if (params.keepOldCopy) {
-            params.distDir = _path.resolve(params.distDir, params.version);
+        injector.registerMap(params);
+        injector.registerMap({
+            params: params,
+            console: console
+        });
+
+        // 预处理和后处理脚本
+        var preprocessing, postprocessing;
+        try {
+            preprocessing = Utils.tryParseFunction(params.preprocessing);
+        } catch (e) {
+            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理脚本格式有误，请检查相关配置。');
+            return;
+        }
+        try {
+            postprocessing = Utils.tryParseFunction(params.postprocessing);
+        } catch (e) {
+            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理脚本格式有误，请检查相关配置。');
+            return;
         }
 
         var timer = new Timer();
-        console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务开始……');
-
-        var tasks = params.tasks || [];
-        tasks.push(function () {
-            console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + params.prjName + ' 任务结束。（共计' + timer.getTime() + 'ms）');
+        console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + projName + ' 任务开始……');
+        try {
+            preprocessing && injector.invoke(preprocessing);
+        } catch (e) {
+            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理将本执行异常：', e);
+        }
+        this.runTasks(params, function () {
+            try {
+                postprocessing && injector.invoke(postprocessing);
+            } catch (e) {
+                console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理将本执行异常：', e);
+            }
+            console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + projName + ' 任务结束。（共计' + timer.getTime() + 'ms）');
             running = false;
             cb && cb();
         });
-        runSequenceUseGulp.apply(null, tasks);
     }
 };
-
-var config = {delUnusedFiles: true},
-    params = {},
-    running = false;
 
 var LazyLoadPlugins = {
     _cached: {},
@@ -294,7 +354,9 @@ var tasks = {
     'prefix_crafter': function (done) {
         var buildDir = params.buildDir,
             pattern = _path.resolve(buildDir, '**/*@(.css)'),
-            pcOpt = params.pcOpt;
+            pcOpt = params.pcOpt,
+
+            errorHandler = getTaskErrorHander('prefix_crafter');
 
         var timer = new Timer();
         var logId = console.genUniqueId && console.genUniqueId();
@@ -302,9 +364,9 @@ var tasks = {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'prefix_crafter 任务开始……');
         gulp.src(pattern)
             .pipe(LazyLoadPlugins.plumber({
-                'errorHandler': getTaskErrorHander('prefix_crafter')
+                'errorHandler': errorHandler
             }))
-            .pipe(PrefixCrafterProxy.process(pcOpt))
+            .pipe(PrefixCrafterProxy.process(pcOpt, errorHandler))
             .pipe(gulp.dest(buildDir))
             .on('end', function () {
                 logId && console.useId && console.useId(logId);
@@ -471,7 +533,7 @@ var tasks = {
             usedFiles = null;
         }
 
-        LazyLoadPlugins.del([_path.resolve(distDir, '**/*')], {force: true}).then(function () {
+        var afterClean = function () {
             gulp.src(_path.resolve(buildDir, '**/*'))
                 .pipe(LazyLoadPlugins.plumber({
                     'errorHandler': errorHandler
@@ -484,68 +546,64 @@ var tasks = {
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist 任务结束。（' + timer.getTime() + 'ms）');
                     done();
                 });
-        });
+        };
+        try {
+            LazyLoadPlugins.del([_path.resolve(distDir, '**/*')], {force: true}).then(afterClean);
+        } catch (e) {
+            errorHandler(e);
+            done();
+        }
     },
     // 上传：
     // - 将发布文件夹中的文件发到测试服务器
     'do_upload': function (done) {
-        var prjName = params.prjName,
-            distDir = params.distDir,
-
-            alOpt = params.alOpt,
-            pageDir = alOpt.pageDir,
-            staticDir = alOpt.staticDir,
+        var distDir = params.distDir,
 
             upOpt = params.upOpt,
 
             uploadAll = upOpt.uploadAll,
             uploadPage = upOpt.page,
             uploadForm = upOpt.form,
+            uploadJudge = upOpt.judge,
 
-            uploadCallback = config.uploadCallback,
-            concurrentLimit = config.concurrentLimit | 0;
+            concurrentLimit = config.concurrentLimit | 0,
 
-        if (typeof uploadCallback === 'string') {
-            uploadCallback = new Function('return ' + uploadCallback)();
-        }
+            errorHandler = getTaskErrorHander('do_upload');
 
         if (concurrentLimit < 1) {
             concurrentLimit = Infinity;
         }
 
         var uploader = new FileUploader({
-            projectName: prjName,
-            pageDir: alOpt.allot ? _path.resolve(distDir, pageDir) : distDir,
-            staticDir: alOpt.allot ? _path.resolve(distDir, staticDir) : distDir,
+            console: console,
+            forInjector: params,
+
             uploadAll: uploadAll,
             uploadPage: uploadPage,
             uploadForm: uploadForm,
+            uploadJudge: uploadJudge,
             concurrentLimit: concurrentLimit
-        });
+        }, errorHandler);
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务开始……');
 
         gulp.src(_path.resolve(distDir, '**/*'))
             .pipe(LazyLoadPlugins.plumber({
-                'errorHandler': getTaskErrorHander('do_upload')
+                'errorHandler': errorHandler
             }))
             .pipe(uploader.appendFile())
             .on('end', function () {
                 var logId = console.genUniqueId && console.genUniqueId();
-                uploader.start(function onProgress(err, filePath, response, results) {
+                uploader.start(function onProgress(results) {
                     // 完成一个文件时
-                    var sof = !err && uploadCallback(response),
-
-                    //relativePath = _path.relative(distDir, filePath),
-                        succeedCount = results.succeed.length + sof,
-                        failedCount = results.failed.length + !sof,
+                    var succeedCount = results.succeed.length,
+                        failedCount = results.failed.length,
                         queueCount = results.queue.length;
                     logId && console.useId && console.useId(logId);
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务进度：' +
                         queueCount + '/' + succeedCount + '/' + failedCount);
                     //console.log('服务器回复：', response);
-                    return sof;
                 }, function onComplete(results) {
                     // 完成所有文件时
                     var succeedCount = results.succeed.length,
@@ -553,12 +611,16 @@ var tasks = {
                         queueCount = results.queue.length,
                         unchangedCount = results.unchanged.length,
                         totalCount = results.totalCount,
-                        resText = '，上传' + queueCount + '个文件，成功' + succeedCount + '个' +
+                        resText = 'do_upload 任务结束' +
+                            (queueCount ? '，上传' + queueCount + '个文件' : '') +
+                            (succeedCount ? '，成功' + succeedCount + '个' : '') +
                             (failedCount ? '，失败' + failedCount + '个' : '') +
-                            '。总共' + totalCount + '个文件' +
-                            (unchangedCount ? '，其中' + unchangedCount + '个无变更。' : '。');
+                            '。总计' + totalCount + '个文件' +
+                            (unchangedCount === totalCount ? '，无任何文件变更' :
+                                (unchangedCount ? '，其中' + unchangedCount + '个无变更' : '')) +
+                            '。';
                     logId && console.useId && console.useId(logId);
-                    console.info(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务结束' + resText + '（' + timer.getTime() + 'ms）');
+                    console.info(Utils.formatTime('[HH:mm:ss.fff]'), resText + '（' + timer.getTime() + 'ms）');
                     if (succeedCount) {
                         console.log(succeedCount, '个文件上传成功：', results.succeed);
                     }
