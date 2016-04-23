@@ -79,7 +79,6 @@ module.exports = {
         if (running) {
             return;
         }
-        running = true;
 
         params = _params;
         // 处理项目基本配置
@@ -107,7 +106,7 @@ module.exports = {
 
         // 生成项目常量并替换参数中的项目常量
         var constFields = {
-            PROJECT: buildDir,
+            PROJECT: Utils.replaceBackSlash(buildDir),
             PROJECT_NAME: projName,
             VERSION: version
         };
@@ -121,34 +120,10 @@ module.exports = {
             console: console
         });
 
-        // 预处理和后处理脚本
-        var preprocessing, postprocessing;
-        try {
-            preprocessing = Utils.tryParseFunction(params.preprocessing);
-        } catch (e) {
-            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理脚本格式有误，请检查相关配置。');
-            return;
-        }
-        try {
-            postprocessing = Utils.tryParseFunction(params.postprocessing);
-        } catch (e) {
-            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理脚本格式有误，请检查相关配置。');
-            return;
-        }
-
         var timer = new Timer();
         console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + projName + ' 任务开始……');
-        try {
-            preprocessing && injector.invoke(preprocessing);
-        } catch (e) {
-            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理将本执行异常：', e);
-        }
+        running = true;
         this.runTasks(params, function () {
-            try {
-                postprocessing && injector.invoke(postprocessing);
-            } catch (e) {
-                console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理将本执行异常：', e);
-            }
             console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + projName + ' 任务结束。（共计' + timer.getTime() + 'ms）');
             running = false;
             cb && cb();
@@ -211,6 +186,18 @@ var tasks = {
                 }))
                 .pipe(gulp.dest(buildDir))
                 .on('end', function () {
+                    // 预处理脚本
+                    var preprocessing;
+                    try {
+                        preprocessing = Utils.tryParseFunction(params.preprocessing);
+                    } catch (e) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理脚本格式有误，请检查相关配置。');
+                    }
+                    try {
+                        preprocessing && injector.invoke(preprocessing);
+                    } catch (e) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理将本执行异常：', e);
+                    }
                     logId && console.useId && console.useId(logId);
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'prepare_build 任务结束。（' + timer.getTime() + 'ms）');
                     done();
@@ -479,7 +466,7 @@ var tasks = {
                 'errorHandler': getTaskErrorHander('optimize_image:png')
             }))
             .pipe(LazyLoadPlugins.cache(LazyLoadPlugins.pngquant({
-                quality: '65-80',
+                quality: '50-80',
                 speed: 4
             })(), {
                 fileCache: new LazyLoadPlugins.cache.Cache({cacheDirName: 'imagemin-cache'})
@@ -542,6 +529,18 @@ var tasks = {
                 .pipe(linker.excludeEmptyDir())
                 .pipe(gulp.dest(distDir))
                 .on('end', function () {
+                    // 后处理脚本
+                    var postprocessing;
+                    try {
+                        postprocessing = Utils.tryParseFunction(params.postprocessing);
+                    } catch (e) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理脚本格式有误，请检查相关配置。');
+                    }
+                    try {
+                        postprocessing && injector.invoke(postprocessing);
+                    } catch (e) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理将本执行异常：', e);
+                    }
                     logId && console.useId && console.useId(logId);
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist 任务结束。（' + timer.getTime() + 'ms）');
                     done();
