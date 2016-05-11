@@ -6,6 +6,13 @@ var _fs = require('fs'),
     _path = require('path'),
     _crypto = require('crypto');
 
+exports.configDir = function (_fileName) {
+    var dirPath = _path.resolve(process.env.USERPROFILE, 'FrontCustos'),
+        fileName = _fileName || '';
+    exports.makeSureDir(dirPath);
+    return _path.resolve(dirPath, fileName);
+};
+
 exports.deepCopy = function (origin, _copy) {
     var self = arguments.callee,
         type = Object.prototype.toString.call(origin),
@@ -175,8 +182,38 @@ exports.getFilesOfDir = function (dir, pat, rec) {
         return [];
     }
 };
+
+exports.cleanEmptyDir = function (dir) {
+    var count = 0;
+    try {
+        var stat = _fs.statSync(dir);
+        if (!stat.isDirectory()) {
+            return 1;
+        }
+        var children = _fs.readdirSync(dir);
+        count = children.length;
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i],
+                cPath = _path.resolve(dir, child),
+                cStat = _fs.statSync(cPath);
+            if (cStat.isDirectory()) {
+                var cCount = exports.cleanEmptyDir(cPath);
+                cCount === 0 && count--;
+            }
+        }
+        if (count === 0) {
+            _fs.rmdirSync(dir);
+        }
+        return count;
+    } catch (e) {
+        return count;
+    }
+};
 // 文件夹相关 ED
 
+exports.replaceBackSlash = function (filePath) {
+    return typeof(filePath) === 'string' ? filePath.replace(/\\/g, '/') : '';
+};
 
 // 格式验证相关 ST
 exports.getFileType = function (file) {

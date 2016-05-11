@@ -44,7 +44,7 @@ FileLinker.prototype = {
         try {
             var entryFiles = Utils.getFilesOfDir(src, '.html|.shtml|.php', true);
             entryFiles.forEach(function (entryFile) {
-                entryFile = entryFile.replace(/\\/g, '/');
+                entryFile = Utils.replaceBackSlash(entryFile);
                 if (finalList.indexOf(entryFile) >= 0) {
                     return;
                 }
@@ -54,7 +54,7 @@ FileLinker.prototype = {
                 }
                 var depList = self._getFileDep(entryFile, cache, src);
                 depList.forEach(function (depFile) {
-                    depFile = depFile.replace(/\\/g, '/');
+                    depFile = Utils.replaceBackSlash(depFile);
                     if (finalList.indexOf(depFile) >= 0) {
                         return;
                     }
@@ -106,8 +106,8 @@ FileLinker.prototype = {
             reg = self._getRegExp(),
             match,
             usedFiles = [],
-            basePath = file.base,
-            filePath = file.path,
+            basePath = Utils.replaceBackSlash(file.base),
+            filePath = Utils.replaceBackSlash(file.path),
             dir = _path.dirname(filePath),
             isStyle = Utils.isStyle(filePath),
             isHtml = Utils.isPage(filePath),
@@ -127,22 +127,22 @@ FileLinker.prototype = {
         while ((match = reg.exec(content)) !== null) {
             var _rawStr = match[0],
                 _rawFile = match[1],
-                _file = _rawFile.split(/[?#]/)[0];
+                _file = _rawFile && _rawFile.split(/[?#]/)[0];
             if (!_file || self._canIgnoreLink(_rawFile)) {
                 continue;
             }
 
-            if (!_fs.existsSync(_file)) {
+            if (!_path.isAbsolute(_file)) {
                 _file = _path.resolve(dir, _file);
-                if (!_fs.existsSync(_file)) {
-                    var information = '无法链接文件：' + _path.relative(basePath, _file),
-                        err = new Error(information);
-                    err.fromFile = _path.relative(basePath, file.path);
-                    err.line = Utils.countLineNumber(content, match);
-                    err.targetFile = _path.relative(basePath, _file);
-                    self.onError && self.onError(err);
-                    continue;
-                }
+            }
+            if (!_fs.existsSync(_file)) {
+                var information = '无法链接文件：' + _path.relative(basePath, _file),
+                    err = new Error(information);
+                err.fromFile = _path.relative(basePath, filePath);
+                err.line = Utils.countLineNumber(content, match);
+                err.targetFile = _path.relative(basePath, _file);
+                self.onError && self.onError(err);
+                continue;
             }
             if (!_fs.statSync(_file).isFile()) {
                 continue;
@@ -173,12 +173,12 @@ FileLinker.prototype = {
         var self = this,
             reg = self._getRegExp('css'),
             match,
-            basePath = file.base,
-            filePath = file.path,
+            basePath = Utils.replaceBackSlash(file.base),
+            filePath = Utils.replaceBackSlash(file.path),
             dir = _path.dirname(filePath),
             usedFiles = [];
         //console.log('================================================================================');
-        //console.log('> FileLinker._getUsedFilesByCssUrl - file:', file.path);
+        //console.log('> FileLinker._getUsedFilesByCssUrl - file:', filePath);
 
         var content = String(file.contents),
             newContent = content;
@@ -186,23 +186,23 @@ FileLinker.prototype = {
         while ((match = reg.exec(content)) !== null) {
             var _rawStr = match[0],
                 _rawFile = match[1],
-                _file = _rawFile.split(/[?#]/)[0];
+                _file = _rawFile && _rawFile.split(/[?#]/)[0];
             if (!_file || self._canIgnoreLink(_rawFile)) {
                 continue;
             }
             //console.log('    ~ find:', _rawStr);
-            if (!_fs.existsSync(_file)) {
+            if (!_path.isAbsolute(_file)) {
                 _file = _path.resolve(dir, _file);
-                if (!_fs.existsSync(_file)) {
-                    //console.log('  but miss: ', _file);
-                    var information = '无法链接文件：' + _path.relative(basePath, _file),
-                        err = new Error(information);
-                    err.fromFile = _path.relative(basePath, file.path);
-                    err.line = Utils.countLineNumber(content, match);
-                    err.targetFile = _path.relative(basePath, _file);
-                    self.onError && self.onError(err);
-                    continue;
-                }
+            }
+            if (!_fs.existsSync(_file)) {
+                //console.log('  but miss: ', _file);
+                var information = '无法链接文件：' + _path.relative(basePath, _file),
+                    err = new Error(information);
+                err.fromFile = _path.relative(basePath, filePath);
+                err.line = Utils.countLineNumber(content, match);
+                err.targetFile = _path.relative(basePath, _file);
+                self.onError && self.onError(err);
+                continue;
             }
             if (!_fs.statSync(_file).isFile()) {
                 continue;
@@ -228,8 +228,8 @@ FileLinker.prototype = {
         var self = this,
             reg = self._getRegExp('html'),
             match,
-            basePath = file.base,
-            filePath = file.path,
+            basePath = Utils.replaceBackSlash(file.base),
+            filePath = Utils.replaceBackSlash(file.path),
             dir = _path.dirname(filePath),
             usedFiles = [];
 
@@ -239,23 +239,23 @@ FileLinker.prototype = {
         while ((match = reg.exec(content)) !== null) {
             var _rawStr = match[0],
                 _rawFile = match[1],
-                _file = _rawFile.split(/[?#]/)[0];
+                _file = _rawFile && _rawFile.split(/[?#]/)[0];
             if (!_file || self._canIgnoreLink(_rawFile)) {
                 continue;
             }
             //console.log('    ~ find:', _rawStr);
-            if (!_fs.existsSync(_file)) {
+            if (!_path.isAbsolute(_file)) {
                 _file = _path.resolve(dir, _file);
-                if (!_fs.existsSync(_file)) {
-                    //console.log('  but miss: ', _file);
-                    var information = '无法链接文件：' + _path.relative(basePath, _file),
-                        err = new Error(information);
-                    err.fromFile = _path.relative(basePath, file.path);
-                    err.line = Utils.countLineNumber(content, match);
-                    err.targetFile = _path.relative(basePath, _file);
-                    self.onError && self.onError(err);
-                    continue;
-                }
+            }
+            if (!_fs.existsSync(_file)) {
+                //console.log('  but miss: ', _file);
+                var information = '无法链接文件：' + _path.relative(basePath, _file),
+                    err = new Error(information);
+                err.fromFile = _path.relative(basePath, filePath);
+                err.line = Utils.countLineNumber(content, match);
+                err.targetFile = _path.relative(basePath, _file);
+                self.onError && self.onError(err);
+                continue;
             }
             if (!_fs.statSync(_file).isFile()) {
                 continue;
@@ -278,8 +278,8 @@ FileLinker.prototype = {
     // 通过解析DOM元素中的属性来获取文件引用依赖关系
     _getUsedFilesByDom: function (file, cb) {
         var self = this,
-            basePath = file.base,
-            filePath = file.path,
+            basePath = Utils.replaceBackSlash(file.base),
+            filePath = Utils.replaceBackSlash(file.path),
             dir = _path.dirname(filePath),
             usedFiles = [];
 
@@ -299,38 +299,38 @@ FileLinker.prototype = {
                 return;
             }
             var _rawFile = $this.attr(propName),
-                _file = _rawFile.split(/[?#]/)[0];
+                _file = _rawFile && _rawFile.split(/[?#]/)[0];
             if (!_file || self._canIgnoreLink(_rawFile)) {
                 return;
             }
             //console.log('    ~ find:', _rawFile);
-            if (!_fs.existsSync(_file)) {
+            if (!_path.isAbsolute(_file)) {
                 _file = _path.resolve(dir, _file);
-                if (!_fs.existsSync(_file)) {
-                    //console.log('      but miss: ', _file);
-                    var information = '无法链接文件：' + _path.relative(basePath, _file),
-                        err = new Error(information),
-                        domPath = [],
-                        getSelector = function (elem) {
-                            var selector = elem.tagName.toLowerCase(),
-                                id = elem.id,
-                                classList = elem.classList;
-                            id && (selector += '#' + id);
-                            classList && [].forEach.call(classList, function (className) {
-                                selector += '.' + className;
-                            });
-                            return selector;
-                        };
-                    domPath.push(getSelector($this.get(0)));
-                    $this.parents().each(function () {
-                        domPath.push(getSelector(this));
-                    });
-                    err.fromFile = _path.relative(basePath, file.path);
-                    err.domPath = domPath.reverse().join('>');
-                    err.targetFile = _path.relative(basePath, _file);
-                    self.onError && self.onError(err);
-                    return;
-                }
+            }
+            if (!_fs.existsSync(_file)) {
+                //console.log('      but miss: ', _file);
+                var information = '无法链接文件：' + _path.relative(basePath, _file),
+                    err = new Error(information),
+                    domPath = [],
+                    getSelector = function (elem) {
+                        var selector = elem.tagName.toLowerCase(),
+                            id = elem.id,
+                            classList = elem.classList;
+                        id && (selector += '#' + id);
+                        classList && [].forEach.call(classList, function (className) {
+                            selector += '.' + className;
+                        });
+                        return selector;
+                    };
+                domPath.push(getSelector($this.get(0)));
+                $this.parents().each(function () {
+                    domPath.push(getSelector(this));
+                });
+                err.fromFile = _path.relative(basePath, filePath);
+                err.domPath = domPath.reverse().join('>');
+                err.targetFile = _path.relative(basePath, _file);
+                self.onError && self.onError(err);
+                return;
             }
             if (!_fs.statSync(_file).isFile()) {
                 return;
@@ -367,11 +367,8 @@ FileLinker.prototype = {
                 return cb(null, file);
             }
 
-            //console.log('================================================================================');
-            //console.log('> FileLinker - file:', file.path);
-
             // 分发的新路径
-            var filePath = file.path.replace(/\\/g, '/'),
+            var filePath = Utils.replaceBackSlash(file.path),
                 fileType = Utils.getFileType(filePath),
                 isText = Utils.isText(filePath),
                 isPage = Utils.isPage(filePath),
@@ -381,6 +378,9 @@ FileLinker.prototype = {
                 flattenDir = flattenMap[fileType] || '',
 
                 pathParts = filePath.split('/');
+
+            //console.log('================================================================================');
+            //console.log('> FileLinker - file:', filePath);
 
             for (var i = 0, l = pathParts.length; i < l; i++) {
                 if (pathParts[i].charAt(0) === '_') {
@@ -394,10 +394,10 @@ FileLinker.prototype = {
                         _path.relative(src, _path.resolve(src, flattenDir, baseName)) :
                         _path.relative(src, filePath)
                 ),
-                newFilePath = (allot ?
-                        _path.resolve(src, isPage ? pageAllotDir : staticAllotDir, fileRela) :
-                        _path.resolve(src, fileRela)
-                ).replace(/\\/g, '/');
+                newFilePath = Utils.replaceBackSlash(allot ?
+                    _path.resolve(src, isPage ? pageAllotDir : staticAllotDir, fileRela) :
+                    _path.resolve(src, fileRela)
+                );
 
             //console.log(_path.relative(src, filePath), '=>', _path.relative(src, newFilePath));
 
@@ -435,7 +435,7 @@ FileLinker.prototype = {
                     }
                     _hash = '?v=' + _hash;
                 }
-                return _newFile.replace(/\\/g, '/') + _hash;
+                return Utils.replaceBackSlash(_newFile) + _hash;
             });
 
             file.path = newFilePath;
@@ -445,11 +445,11 @@ FileLinker.prototype = {
     },
     excludeUnusedFiles: function (usedFiles) {
         return Through2.obj(function (file, enc, cb) {
-            var filePath = file.path.replace(/\\/g, '/'),
+            var filePath = Utils.replaceBackSlash(file.path),
                 fileName = _path.basename(filePath);
 
             //console.log('================================================================================');
-            //console.log('> FileLinker.excludeUnusedFiles - file:', file.path);
+            //console.log('> FileLinker.excludeUnusedFiles - file:', filePath);
             if (fileName[0] !== '_' && (usedFiles === null || usedFiles.indexOf(filePath) >= 0)) {
                 //console.log('  - passed.');
                 this.push(file);
@@ -460,10 +460,10 @@ FileLinker.prototype = {
     },
     excludeEmptyDir: function () {
         return Through2.obj(function (file, enc, cb) {
-            var filePath = file.path.replace(/\\/g, '/');
+            var filePath = Utils.replaceBackSlash(file.path);
 
             //console.log('================================================================================');
-            //console.log('> FileLinker.excludeEmptyDir - file:', file.path);
+            //console.log('> FileLinker.excludeEmptyDir - file:', filePath);
             if (!file.isDirectory() || Utils.getFilesOfDir(filePath, '*', true).length) {
                 //if (file.isDirectory()) {
                 //    console.log('children:', Utils.getFilesOfDir(filePath, '*', true).length);

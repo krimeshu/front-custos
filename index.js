@@ -69,9 +69,16 @@ module.exports = {
     },
     // 直接执行任务
     runTasks: function (_params, cb) {
+        if (running) {
+            return;
+        }
         params = _params;
         var tasks = params.tasks || [];
-        tasks.push(cb);
+        tasks.push(function () {
+            running = false;
+            cb && cb();
+        });
+        running = true;
         runSequenceUseGulp.apply(null, tasks);
     },
     // 开始处理并执行任务
@@ -79,7 +86,6 @@ module.exports = {
         if (running) {
             return;
         }
-        running = true;
 
         params = _params;
         // 处理项目基本配置
@@ -107,7 +113,7 @@ module.exports = {
 
         // 生成项目常量并替换参数中的项目常量
         var constFields = {
-            PROJECT: buildDir,
+            PROJECT: Utils.replaceBackSlash(buildDir),
             PROJECT_NAME: projName,
             VERSION: version
         };
@@ -121,36 +127,10 @@ module.exports = {
             console: console
         });
 
-        // 预处理和后处理脚本
-        var preprocessing, postprocessing;
-        try {
-            preprocessing = Utils.tryParseFunction(params.preprocessing);
-        } catch (e) {
-            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理脚本格式有误，请检查相关配置。');
-            return;
-        }
-        try {
-            postprocessing = Utils.tryParseFunction(params.postprocessing);
-        } catch (e) {
-            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理脚本格式有误，请检查相关配置。');
-            return;
-        }
-
         var timer = new Timer();
         console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + projName + ' 任务开始……');
-        try {
-            preprocessing && injector.invoke(preprocessing);
-        } catch (e) {
-            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理将本执行异常：', e);
-        }
         this.runTasks(params, function () {
-            try {
-                postprocessing && injector.invoke(postprocessing);
-            } catch (e) {
-                console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理将本执行异常：', e);
-            }
             console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + projName + ' 任务结束。（共计' + timer.getTime() + 'ms）');
-            running = false;
             cb && cb();
         });
     }
@@ -198,24 +178,46 @@ var tasks = {
     // - 复制源文件到构建文件夹
     'prepare_build': function (done) {
         var srcDir = params.srcDir,
-            buildDir = params.buildDir;
+            buildDir = params.buildDir,
+
+            errorHandler = getTaskErrorHander('prepare_build');
 
         var timer = new Timer();
         var logId = console.genUniqueId && console.genUniqueId();
         logId && console.useId && console.useId(logId);
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'prepare_build 任务开始……');
-        LazyLoadPlugins.del([_path.resolve(buildDir, '**/*')], {force: true}).then(function () {
-            gulp.src(_path.resolve(srcDir, '**/*'))
+        var afterClean = function () {
+            gulp.src([_path.resolve(srcDir, '**/*'), '!*___jb_tmp___'])
                 .pipe(LazyLoadPlugins.plumber({
-                    'errorHandler': getTaskErrorHander('prepare_build')
+                    'errorHandler': errorHandler
                 }))
                 .pipe(gulp.dest(buildDir))
                 .on('end', function () {
+                    // 预处理脚本
+                    var preprocessing;
+                    try {
+                        preprocessing = Utils.tryParseFunction(params.preprocessing);
+                    } catch (e) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理脚本格式有误，请检查相关配置。');
+                    }
+                    try {
+                        preprocessing && injector.invoke(preprocessing);
+                    } catch (e) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理将本执行异常：', e);
+                    }
                     logId && console.useId && console.useId(logId);
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'prepare_build 任务结束。（' + timer.getTime() + 'ms）');
                     done();
                 });
-        });
+        };
+        var cleanFailed = function (e) {
+            var err = new Error('输出目录清理失败，请检查浏览器是否占用目录');
+            err.detail = e;
+            errorHandler(err);
+
+            afterClean();
+        };
+        LazyLoadPlugins.del([_path.resolve(buildDir, '**/*')], {force: true}).then(afterClean).catch(cleanFailed);
     },
     // 替换常量：
     // - 替换常见常量（项目路径、项目名字等）
@@ -424,11 +426,19 @@ var tasks = {
                 //console.log('recycledFiles:', recycledFiles);
                 //console.log('allotedUsedFiles:', allotedUsedFiles);
                 // 3. 清空构建文件夹的过期旧文件
-                LazyLoadPlugins.del(recycledFiles, {force: true}).then(function () {
+                var afterClean = function () {
                     logId && console.useId && console.useId(logId);
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'allot_link 任务结束。（' + timer.getTime() + 'ms）');
                     done();
-                });
+                };
+                var cleanFailed = function (e) {
+                    var err = new Error('输出目录清理失败，请检查浏览器是否占用目录');
+                    err.detail = e;
+                    errorHandler(err);
+
+                    afterClean();
+                };
+                LazyLoadPlugins.del(recycledFiles, {force: true}).then(afterClean).catch(cleanFailed);
             });
     },
     // 压缩CSS
@@ -479,7 +489,7 @@ var tasks = {
                 'errorHandler': getTaskErrorHander('optimize_image:png')
             }))
             .pipe(LazyLoadPlugins.cache(LazyLoadPlugins.pngquant({
-                quality: '65-80',
+                quality: '50-80',
                 speed: 4
             })(), {
                 fileCache: new LazyLoadPlugins.cache.Cache({cacheDirName: 'imagemin-cache'})
@@ -542,17 +552,31 @@ var tasks = {
                 .pipe(linker.excludeEmptyDir())
                 .pipe(gulp.dest(distDir))
                 .on('end', function () {
+                    // 后处理脚本
+                    var postprocessing;
+                    try {
+                        postprocessing = Utils.tryParseFunction(params.postprocessing);
+                    } catch (e) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理脚本格式有误，请检查相关配置。');
+                    }
+                    try {
+                        postprocessing && injector.invoke(postprocessing);
+                    } catch (e) {
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理将本执行异常：', e);
+                    }
                     logId && console.useId && console.useId(logId);
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_dist 任务结束。（' + timer.getTime() + 'ms）');
                     done();
                 });
         };
-        try {
-            LazyLoadPlugins.del([_path.resolve(distDir, '**/*')], {force: true}).then(afterClean);
-        } catch (e) {
-            errorHandler(e);
-            done();
-        }
+        var cleanFailed = function (e) {
+            var err = new Error('输出目录清理失败，请检查浏览器是否占用目录');
+            err.detail = e;
+            errorHandler(err);
+
+            afterClean();
+        };
+        LazyLoadPlugins.del([_path.resolve(distDir, '**/*')], {force: true}).then(afterClean).catch(cleanFailed);
     },
     // 上传：
     // - 将发布文件夹中的文件发到测试服务器
@@ -599,10 +623,11 @@ var tasks = {
                     // 完成一个文件时
                     var succeedCount = results.succeed.length,
                         failedCount = results.failed.length,
-                        queueCount = results.queue.length;
+                        queueCount = results.queue.length,
+                        info = 'do_upload 任务进度：' + succeedCount + '/' + queueCount +
+                            (failedCount ? ', 失败：' + failedCount : '');
                     logId && console.useId && console.useId(logId);
-                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'do_upload 任务进度：' +
-                        queueCount + '/' + succeedCount + '/' + failedCount);
+                    console.log(Utils.formatTime('[HH:mm:ss.fff]'), info);
                     //console.log('服务器回复：', response);
                 }, function onComplete(results) {
                     // 完成所有文件时
