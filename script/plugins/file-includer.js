@@ -5,7 +5,7 @@
 var _fs = require('fs'),
     _path = require('path'),
 
-    Utils = require('./utils.js');
+    Utils = require('../utils.js');
 
 var Through2 = require('through2');
 
@@ -166,10 +166,10 @@ FileIncluder.prototype = {
                         }
                         if (_fragName) {
                             _content = _content.split(new RegExp(
-                                    '(?:\\/\\*|\\/\\/|<!--)\\s*fragBegin\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
+                                    '(?:\\/\\*!?|\\/\\/|<!--)\\s*fragBegin\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
                                 ))[1] || '';
                             _content = _content.split(new RegExp(
-                                    '(?:\\/\\*|\\/\\/|<!--)\\s*fragEnd\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
+                                    '(?:\\/\\*!?|\\/\\/|<!--)\\s*fragEnd\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
                                 ))[0] || '';
                         }
                         if (_para) {
