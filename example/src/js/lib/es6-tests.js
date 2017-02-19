@@ -62,7 +62,7 @@ var testRunner = new _es6TestRunner2.default({
             function Cat() {
                 _classCallCheck(this, Cat);
 
-                var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Cat).call(this));
+                var _this = _possibleConstructorReturn(this, (Cat.__proto__ || Object.getPrototypeOf(Cat)).call(this));
 
                 _this.type = 'cat';
                 return _this;
@@ -85,8 +85,8 @@ var testRunner = new _es6TestRunner2.default({
     },
     'test-destructuring': function testDestructuring() {
         var dog = { type: 'animal', many: 2 };
-        var type = dog.type;
-        var many = dog.many;
+        var type = dog.type,
+            many = dog.many;
 
         console.log(type, many); //animal 2
 
@@ -96,7 +96,7 @@ var testRunner = new _es6TestRunner2.default({
     },
     'test-defaultAndRest': function testDefaultAndRest() {
         function animal() {
-            var type = arguments.length <= 0 || arguments[0] === undefined ? 'cat' : arguments[0];
+            var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'cat';
 
             console.log(type);
         }

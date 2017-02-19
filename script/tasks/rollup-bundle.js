@@ -1,5 +1,5 @@
 /**
- * Created by krimeshu on 2016/5/14.
+ * Created by krimeshu on 2017/2/16.
  */
 
 var _path = require('path'),
@@ -10,12 +10,17 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-// 编译SASS:
-// - 通过 gulp-sass (基于 node-sass) 编译 scss 文件
+// PluginLoader.add({'RollupProxy': ()=> require('../plugins/rollup-proxy.js')});
+
+// 使用Browserify打包JS:
+// - 内容中存在某行 'browserify entry'; 标记的脚本将被识别为入口进行打包
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
         var workDir = params.workDir,
-            pattern = _path.resolve(workDir, '**/*@(.scss)');
+            pattern = _path.resolve(workDir, '**/*@(.js)'),
+            ruOpt = params.ruOpt;
+
+        var rollup = new plugins.RollupProxy(errorHandler);
 
         var timer = new Timer();
         var logId = console.genUniqueId && console.genUniqueId();
@@ -23,10 +28,8 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(pattern)
             .pipe(plugins.plumber({'errorHandler': errorHandler}))
-            .pipe(plugins.sass().on('error', function () {
-                // errorHandler(err);
-                this.emit('end');
-            }))
+            .pipe(rollup.findEntryFiles())
+            .pipe(rollup.handleFile())
             .pipe(gulp.dest(workDir))
             .on('end', function () {
                 logId && console.useId && console.useId(logId);
