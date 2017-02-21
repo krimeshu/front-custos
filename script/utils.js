@@ -7,7 +7,8 @@ var _fs = require('fs'),
     _crypto = require('crypto');
 
 exports.configDir = function (_fileName) {
-    var dirPath = _path.resolve(process.env.USERPROFILE, 'FrontCustos'),
+    var homeDir = process.env.USERPROFILE || process.env.USER,
+        dirPath = _path.resolve(homeDir, 'FrontCustos'),
         fileName = _fileName || '';
     exports.makeSureDir(dirPath);
     return _path.resolve(dirPath, fileName);
