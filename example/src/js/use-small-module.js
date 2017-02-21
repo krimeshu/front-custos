@@ -1,7 +1,9 @@
 import { foo } from './lib/small-module';
 import { foo as foo2 } from './lib/sub-module';
 
+foo();
+foo2();
+
 setTimeout(() => {
-    foo();
-    foo2();
-}, 50);
+    console.log('Rollup with babel plugin enabled.');
+});
