@@ -1,4 +1,5 @@
 {
+  "name": "example",
   "version": "1.0.2",
   "fcOpt": {
     "scOpt": {
@@ -33,6 +34,7 @@
       "sprite_crafter",
       "run_csso",
       "join_include",
+      "rollup_bundle",
       "run_browserify",
       "allot_link",
       "optimize_image",
@@ -42,7 +44,15 @@
     "innerDistDir": "./dist",
     "preprocessing": "function preprocessing(console, workDir) {\n    console.log('当前工作目录：', workDir);\n    // console.log('其它可用参数：', this.queryAvailableArguments().join(', '));\n    // Todo: do something before build.\n}",
     "postprocessing": "function postprocessing(console, workDir) {\n    console.log('当前工作目录：', workDir);\n    // console.log('其它可用参数：', this.queryAvailableArguments().join(', '));\n    // Todo: do something after build.\n}",
-    "keepOldCopy": false
+    "keepOldCopy": false,
+    "ruOpt": {
+      "entry": "js/use-small-module.js",
+      "plugins": {
+        "nodeResolve": true,
+        "commonJS": true,
+        "babel": true
+      } 
+    }
   },
   "watchToRebuilding": false
 }
