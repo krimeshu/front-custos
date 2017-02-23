@@ -22,21 +22,38 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
         var workDir = params.workDir,
             pattern = _path.resolve(workDir, '**/*@(.js)'),
-            ruOpt = params.ruOpt;
+            ruOpt = params.ruOpt || {};
 
-        var entry = String(ruOpt.entry).split(/\r?\n/g).map((entryPath) => {
-            return _path.resolve(workDir, entryPath);
-        });
+        var timer = new Timer();
+        var logId = console.genUniqueId && console.genUniqueId();
+        logId && console.useId && console.useId(logId);
+        console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
+
+        if (!ruOpt.entry) {
+            console.error('没有设置打包入口脚本。');
+            _finish();
+            return;
+        }
+
+        var entry = ruOpt.entry;
+        if (typeof entry == 'string') {
+            entry = entry.split(/\r?\n/g).map((entryPath) => {
+                return _path.resolve(workDir, entryPath);
+            });
+        }
+        if (Array.isArray(entry)) {
+            if (entry.some(function (e) {
+                return typeof e != 'string';
+            })) {
+                console.error('打包入口 entry 类型错误（应为 string/array of string）');
+            }
+        }
         var moduleName = entry.map((entryPath) => {
             var extName = _path.extname(entryPath),
                 name = _path.basename(entryPath, extName);
             return name.replace(/(\-\w)/g, function (m) { return m[1].toUpperCase(); });
         });
 
-        var timer = new Timer();
-        var logId = console.genUniqueId && console.genUniqueId();
-        logId && console.useId && console.useId(logId);
-        console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(pattern, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
             .pipe(plugins.rollup({
@@ -53,10 +70,12 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 ]
             }))
             .pipe(gulp.dest(workDir))
-            .on('end', function () {
-                logId && console.useId && console.useId(logId);
-                console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
-                done();
-            });
+            .on('end', _finish);
+
+        function _finish() {
+            logId && console.useId && console.useId(logId);
+            console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
+            done();
+        }
     };
 };
