@@ -47,7 +47,12 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
 
         var afterClean = function () {
             gulp.src(_path.resolve(workDir, '**/*'))
-                .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
+                .pipe(plugins.plumber({
+                    'errorHandler': function (err) {
+                        errorHandler(err);
+                        done();
+                    }
+                }))
                 .pipe(linker.excludeUnusedFiles(usedFiles))
                 .pipe(linker.excludeEmptyDir())
                 .pipe(gulp.dest(distDir))

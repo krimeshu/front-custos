@@ -21,7 +21,7 @@ PluginLoader.add({ 'rollupPluginBabel': () => require('rollup-plugin-babel') });
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
         var workDir = params.workDir,
-            pattern = _path.resolve(workDir, '**/*@(.js)'),
+            pattern = _path.resolve(workDir, '**/*@(.js|.es6|.jsx)'),
             ruOpt = params.ruOpt || {};
 
         var timer = new Timer();
@@ -54,20 +54,29 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             return name.replace(/(\-\w)/g, function (m) { return m[1].toUpperCase(); });
         });
 
+        var plugin = [],
+            ruOptPlugins = ruOpt.plugins;
+        if (ruOptPlugins.nodeResolve) {
+            plugin.push(plugins.rollupPluginNodeResolve({ jsnext: true, main: true, browser: true }));
+        }
+        if (ruOptPlugins.commonJS) {
+            plugin.push(plugins.rollupPluginCommonJS());
+        }
+        if (ruOptPlugins.babel) {
+            plugin.push(plugins.rollupPluginBabel({
+                presets: [[plugins.babelPresetEs2015.buildPreset, { modules: false }]],
+                plugins: [plugins.babelPluginExternalHelpers]
+            }));
+        }
+
         gulp.src(pattern, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
             .pipe(plugins.rollup({
                 entry: entry,
                 format: 'iife',
                 moduleName: '_bundle',
-                plugins: [
-                    plugins.rollupPluginNodeResolve({ jsnext: true, main: true, browser: true }),
-                    plugins.rollupPluginCommonJS(),
-                    plugins.rollupPluginBabel({
-                        presets: [[plugins.babelPresetEs2015.buildPreset, { modules: false }]],
-                        plugins: [plugins.babelPluginExternalHelpers]
-                    })
-                ]
+                impliedExtensions: ['.js', '.es6', '.jsx'],
+                plugins: plugin
             }))
             .pipe(gulp.dest(workDir))
             .on('end', _finish);
