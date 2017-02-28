@@ -2,7 +2,7 @@
 
 一个前端开发的试验工具，用于懒得或不会写 gulpfile 时，能快速对不同项目生成常用的 gulp 任务。
 
-![screenshot-command-line](https://github.com/krimeshu/front-custos-gui/raw/master/screenshot-command-line.png)
+![screenshot-command-line](https://github.com/krimeshu/front-custos/raw/master/screenshot-command-line.png)
 
 ## 安装方法
 
