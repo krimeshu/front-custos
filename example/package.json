@@ -9,13 +9,21 @@
     "pcOpt": {
       "browsers": "Android > 2.3, iOS > 6.0"
     },
+    "ruOpt": {
+      "entry": "js/use-small-module.js",
+      "plugins": {
+        "nodeResolve": true,
+        "commonJS": true,
+        "babel": true
+      } 
+    },
     "alOpt": {
       "allot": true,
       "pageDir": "page",
       "staticDir": "static",
       "staticUrlHead": "http://example.com/{PROJECT_NAME}",
       "flatten": true,
-      "hashLink": true,
+      "hashLink": "IN_FILE_NAME",
       "useStaticUrlHead": false
     },
     "upOpt": {
@@ -44,15 +52,7 @@
     "innerDistDir": "./dist",
     "preprocessing": "function preprocessing(console, workDir) {\n    console.log('当前工作目录：', workDir);\n    // console.log('其它可用参数：', this.queryAvailableArguments().join(', '));\n    // Todo: do something before build.\n}",
     "postprocessing": "function postprocessing(console, workDir) {\n    console.log('当前工作目录：', workDir);\n    // console.log('其它可用参数：', this.queryAvailableArguments().join(', '));\n    // Todo: do something after build.\n}",
-    "keepOldCopy": false,
-    "ruOpt": {
-      "entry": "js/use-small-module.js",
-      "plugins": {
-        "nodeResolve": true,
-        "commonJS": true,
-        "babel": true
-      } 
-    }
+    "keepOldCopy": false
   },
   "watchToRebuilding": false
 }

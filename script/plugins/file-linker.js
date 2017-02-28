@@ -26,6 +26,12 @@ FileLinker.prototype = {
     _regExp: /(?:\/\/)?[#_]link\(['"]?([^\)'"]+)['"]?\)/gi,
     _regExpHtml: /<(?:link|script|img|audio|video|source)[^>]*(?:href|src|data\-src)\s*=\s*['"]?([^<>'"\$]+)[<>'"\$]?[^>]*>/gi,
     _regExpCss: /[,:\s\b\f\n\t\r]url\(['"]?([^\)'"]+)['"]?\)/gi,
+    // 文件指纹添加方式（不添加/作为URL参数/作为文件名后缀）
+    _hashLinkTypes: {
+        NO_HASH: 'NO_HASH',
+        AS_QUERY_STRING: 'AS_QUERY_STRING',
+        IN_FILE_NAME: 'IN_FILE_NAME'
+    },
     // 获取初始化后的正则表达式
     _getRegExp: function (type) {
         var self = this,
@@ -344,15 +350,25 @@ FileLinker.prototype = {
             }
         });
         if (cb) {
-                // 不推荐使用 $this.xml()，会将 <div></div> 转换成 <div/>
+            // 不推荐使用 $this.xml()，会将 <div></div> 转换成 <div/>
             file.contents = new Buffer($.html());
         }
         //console.log(' |  _getUsedFilesByDom:', usedFiles);
         return usedFiles;
     },
+    _getHash: function (_filePath) {
+        var hashCache = this._hashCache || (this._hashCache = {}),
+            _hash = hashCache[_filePath];
+        if (!_hash) {
+            _hash = hashCache[_filePath] = Utils.md5(_filePath, true);
+        }
+        return _hash;
+    },
     handleFile: function (alOpt, allotMap) {
         var self = this,
-            hashCache = {};
+            hashLinkTypes = this._hashLinkTypes;
+
+        self._hashCache = {};
 
         // 相关配置项
         var src = alOpt.src,
@@ -365,6 +381,11 @@ FileLinker.prototype = {
             flattenMap = alOpt.flattenMap,
             hashLink = alOpt.hashLink;
 
+        if (!hashLinkTypes[hashLink]) {
+            // 非法参数，转为默认参数
+            hashLink = hashLinkTypes.NO_HASH;
+        }
+
         return Through2.obj(function (file, enc, cb) {
             if (file.isDirectory()) {
                 return cb(null, file);
@@ -372,12 +393,15 @@ FileLinker.prototype = {
 
             // 分发的新路径
             var filePath = Utils.replaceBackSlash(file.path),
+                filePath_org = filePath,
                 fileType = Utils.getFileType(filePath),
                 isText = Utils.isText(filePath),
                 isPage = Utils.isPage(filePath),
                 fromCss = Utils.isStyle(filePath),
 
+                dirName = _path.dirname(filePath),
                 baseName = _path.basename(filePath),
+                extName = _path.extname(filePath),
                 flattenDir = flattenMap[fileType] || '',
 
                 pathParts = filePath.split('/');
@@ -391,37 +415,67 @@ FileLinker.prototype = {
                 }
             }
 
+            var hash = '';
+            if (hashLink != hashLinkTypes.NO_HASH) {
+                // 作为URL参数
+                hash = self._getHash(filePath);
+            }
+
+            if (!isPage && hashLink == hashLinkTypes.IN_FILE_NAME) {
+                // 文件指纹作为文件名后缀
+                baseName = _path.basename(filePath, extName) + '_' + hash + extName;
+                filePath = _path.resolve(dirName, baseName);
+            }
+
             //console.log('- baseName:', baseName, '\n- fileType:', fileType, '\n- flattenDir:', flattenDir, '\n===')
 
             var fileRela = (flatten ?
                 _path.relative(src, _path.resolve(src, flattenDir, baseName)) :
                 _path.relative(src, filePath)
-            ),
-                newFilePath = Utils.replaceBackSlash(allot ?
-                    _path.resolve(src, isPage ? pageAllotDir : staticAllotDir, fileRela) :
-                    _path.resolve(src, fileRela)
-                );
+            );
+            var newFilePath = Utils.replaceBackSlash(allot ?
+                _path.resolve(src, isPage ? pageAllotDir : staticAllotDir, fileRela) :
+                _path.resolve(src, fileRela)
+            );
 
             //console.log(_path.relative(src, filePath), '=>', _path.relative(src, newFilePath));
 
-            allotMap[filePath] = newFilePath;
-
             isText && self.getUsedFiles(file, function (_rawFile, _filePath) {
+                var _hash = '';
+                if (hashLink != hashLinkTypes.NO_HASH) {
+                    // 需要处理文件指纹
+                    _hash = self._getHash(_filePath);
+                }
+
                 var _fileType = Utils.getFileType(_filePath),
                     _isPage = Utils.isPage(_filePath),
 
+                    _dirName = _path.dirname(_filePath),
                     _baseName = _path.basename(_filePath),
+                    _extName = _path.extname(_filePath),
                     _flattenDir = flattenMap[_fileType] || '';
 
+                if (!_isPage && hashLink == hashLinkTypes.IN_FILE_NAME) {
+                    // 文件指纹作为文件名后缀
+                    _baseName = _path.basename(_filePath, _extName) + '_' + _hash + _extName;
+                    _filePath = _path.resolve(_dirName, _baseName);
+                }
+
+                // 相对路径（用与结合链接前缀，拼接URL）
                 var _fileRela = (flatten ?
+                    // 简化后的文件相对路径
                     _path.relative(src, _path.resolve(src, _flattenDir, _baseName)) :
+                    // 普通的文件相对路径
                     _path.relative(src, _filePath)
-                ),
-                    _newFilePath = (allot ?
-                        _path.resolve(src, _isPage ? pageAllotDir : staticAllotDir, _fileRela) :
-                        _path.resolve(src, _fileRela)
-                    ),
-                    _newFile;
+                );
+                // 文件新路径（实际保存位置）
+                var _newFilePath = (allot ?
+                    // 分发后的文件路径（页面文件与静态资源文件分开存放）
+                    _path.resolve(src, _isPage ? pageAllotDir : staticAllotDir, _fileRela) :
+                    // 不分发的文件路径
+                    _path.resolve(src, _fileRela)
+                );
+                var _newFile;
 
                 if (allot && !_isPage && !fromCss && useStaticUrlHead && staticUrlHead) {
                     var _sp = staticUrlHead.charAt(staticUrlHead.length - 1) !== '/' ? '/' : '';
@@ -430,17 +484,16 @@ FileLinker.prototype = {
                     _newFile = _path.relative(_path.dirname(newFilePath), _newFilePath);
                 }
 
-                var _hash = '';
-                if (hashLink) {
-                    _hash = hashCache[_filePath];
-                    if (!_hash) {
-                        _hash = hashCache[_filePath] = Utils.md5(_filePath, true);
-                    }
-                    _hash = '?v=' + _hash;
+                _newFile = Utils.replaceBackSlash(_newFile);
+
+                if (hashLink == hashLinkTypes.AS_QUERY_STRING) {
+                    // 文件指纹作为URL参数
+                    _newFile += '?v=' + _hash;
                 }
-                return Utils.replaceBackSlash(_newFile) + _hash;
+                return _newFile;
             });
 
+            allotMap[filePath_org] = newFilePath;
             file.path = newFilePath;
 
             return cb(null, file);
