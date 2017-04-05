@@ -1,9 +1,10 @@
 {
   "name": "front-custos",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
+    "electron-rebuild": "gulp electron-rebuild",
     "test": "node test"
   },
   "author": "krimeshu",
