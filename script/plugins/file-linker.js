@@ -101,7 +101,7 @@ FileLinker.prototype = {
             // 忽略空链接
             !_rawStr.length ||
             // 忽略非本地文件
-            /^((http|https|data|javascript|about|chrome):||\/\/)/.test(_rawStr) ||
+            /^((http|https|data|javascript|about|chrome):|\/\/)/.test(_rawStr) ||
             // 忽略各种模板标记
             /((\{\{|}})|(<|>)|(\{.*?})|^\$)/.test(_rawStr)
         );
