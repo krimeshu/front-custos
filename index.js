@@ -26,8 +26,6 @@ var FrontCustos = {
     FilenameHelper: FilenameHelper,
     // 接管console
     takeOverConsole: ConsoleProxy.takeOverConsole.bind(ConsoleProxy),
-    // 所有可用任务列表
-    availableTasks: taskManager.availableTasks,
     // 补全并按序排列任务
     fillAndOrderTasks: taskManager.fillAndOrderTasks.bind(taskManager),
     // 直接执行任务

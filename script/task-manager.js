@@ -9,10 +9,10 @@ var gulp = require('gulp'),
     
     ConsoleProxy = require('./console-proxy.js'),
     DependencyInjector = require('./dependency-injector.js'),
+    TaskList = require('./task-list.js'),
     TaskErrorHandler = require('./task-error-handler.js');
 
 function TaskManager() {
-    this._availableTasks = [];
     this._map = {};
     this._data = [];
 
@@ -21,30 +21,15 @@ function TaskManager() {
         gulp: gulp
     });
 
-    this._define('compile_sass', require('./tasks/compile-sass'), '编译SASS文件');
-    this._define('run_babel', require('./tasks/run-babel'), '使用babel转换es6脚本');
-    this._define('prepare_build', require('./tasks/prepare-build'), '准备项目构建', 'locked');
-    this._define('replace_const', require('./tasks/replace-const'), '替换定义的常量');
-    this._define('vue_php_ssr_template', require('./tasks/vue-php-ssr-template'), '处理Vue-PHP服务端模板');
-    this._define('prefix_crafter', require('./tasks/prefix-crafter'), '添加CSS3前缀');
-    this._define('sprite_crafter', require('./tasks/sprite-crafter'), '自动合并雪碧图');
-    this._define('run_csso', require('./tasks/run-csso'), '压缩样式');
-    this._define('join_include', require('./tasks/join-include'), '合并包含的文件');
-    this._define('rollup_bundle', require('./tasks/rollup-bundle'), '通过rollup打包脚本');
-    this._define('run_browserify', require('./tasks/run-browserify'), '通过browserify打包脚本');
-    this._define('allot_link', require('./tasks/allot-link'), '分发关联文件');
-    this._define('optimize_image', require('./tasks/optimize-image'), '压缩图片');
-    this._define('do_dist', require('./tasks/do-dist'), '输出项目文件', 'locked');
-    this._define('do_upload', require('./tasks/do-upload'), '上传文件', 'disabled');
+    TaskList.forEach((task) => {
+        this._define(task.name, task.load(), task.desc);
+    });
 
     this._registerToGulp();
 }
 
 TaskManager.prototype = {
-    get availableTasks() {
-        return this._availableTasks;
-    },
-    _define: function (name, mod, desc, specProp) {
+    _define: function (name, mod, desc) {
         if (typeof mod === 'function') {
             this._doDefine(name, mod);
         } else if (typeof mod === 'object') {
@@ -54,12 +39,6 @@ TaskManager.prototype = {
                 }
             }
         }
-        var t = {
-            name: name,
-            desc: desc
-        };
-        specProp && (t[specProp] = true);
-        this._availableTasks.push(t);
     },
     _doDefine: function (name, task) {
         if (this._map[name]) {
@@ -91,8 +70,8 @@ TaskManager.prototype = {
     },
     fillAndOrderTasks: function (tasks) {
         var _tasks = [],
-            availableTasks = this.availableTasks;
-        for (var i = 0, task; task = availableTasks[i]; i++) {
+            taskList = TaskList;
+        for (var i = 0, task; task = taskList[i]; i++) {
             var pos = tasks.indexOf(task.name);
             if (!task.disabled && (pos >= 0 || task.locked)) {
                 _tasks.push(task.name);
