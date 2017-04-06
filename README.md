@@ -49,6 +49,12 @@ frontCustos.setConfig({
 frontCustos.process(fcOptions);
 ```
 
+执行 `make.js`。
+
+```bash
+node make
+```
+
 项目具体任务配置存在项目根目录的 `package.json` 文件的 `fcOpt` 字段内：
 
 ```javascript
