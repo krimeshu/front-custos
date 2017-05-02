@@ -29,25 +29,25 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         logId && console.useId && console.useId(logId);
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
 
-        if (!ruOpt.entry) {
+        var entry = ruOpt.entry;
+        if (typeof entry == 'string' && entry.length) {
+            entry = entry.split(/\r?\n/g).map((entryPath) => _path.resolve(workDir, entryPath));
+        }
+        if (Array.isArray(entry)) {
+            if (entry.some((e) => typeof e != 'string')) {
+                console.error('打包入口 entry 类型错误（应为 string/array of string）');
+            }
+        }
+        if (params.bundleEntry) {
+            // 其它任务中找到的打包入口脚本
+            entry = (entry || []).concat(params.bundleEntry);
+        }
+        if (!entry || !entry.length) {
             console.error('没有设置打包入口脚本。');
             _finish();
             return;
         }
 
-        var entry = ruOpt.entry;
-        if (typeof entry == 'string') {
-            entry = entry.split(/\r?\n/g).map((entryPath) => {
-                return _path.resolve(workDir, entryPath);
-            });
-        }
-        if (Array.isArray(entry)) {
-            if (entry.some(function (e) {
-                return typeof e != 'string';
-            })) {
-                console.error('打包入口 entry 类型错误（应为 string/array of string）');
-            }
-        }
         var moduleName = entry.map((entryPath) => {
             var extName = _path.extname(entryPath),
                 name = _path.basename(entryPath, extName);

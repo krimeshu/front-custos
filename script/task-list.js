@@ -12,6 +12,7 @@ var TaskList = [
     { name: 'sprite_crafter', load: () => require('./tasks/sprite-crafter'), desc: '自动合并雪碧图' },
     { name: 'run_csso', load: () => require('./tasks/run-csso'), desc: '压缩样式' },
     { name: 'join_include', load: () => require('./tasks/join-include'), desc: '合并包含的文件' },
+    { name: 'find_bundle_entry', load: () => require('./tasks/find-bundle-entry'), desc: '通过分析html判断需要打包的脚本' },
     { name: 'rollup_bundle', load: () => require('./tasks/rollup-bundle'), desc: '通过rollup打包脚本' },
     { name: 'run_browserify', load: () => require('./tasks/run-browserify'), desc: '通过browserify打包脚本' },
     { name: 'allot_link', load: () => require('./tasks/allot-link'), desc: '分发关联文件' },
