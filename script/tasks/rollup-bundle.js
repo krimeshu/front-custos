@@ -11,7 +11,7 @@ var _path = require('path'),
     Timer = require('../timer.js');
 
 // PluginLoader.add({'RollupProxy': ()=> require('../plugins/rollup-proxy.js')});
-PluginLoader.add({ 'rollup': () => require('gulp-rollup') });
+PluginLoader.add({ 'rollup': () => require('gulp-better-rollup') });
 PluginLoader.add({ 'rollupPluginNodeResolve': () => require('rollup-plugin-node-resolve') });
 PluginLoader.add({ 'rollupPluginCommonJS': () => require('rollup-plugin-commonjs') });
 PluginLoader.add({ 'rollupPluginBabel': () => require('rollup-plugin-babel') });
@@ -29,7 +29,8 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         logId && console.useId && console.useId(logId);
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
 
-        var entry = ruOpt.entry;
+        var entry = ruOpt.entry,
+            format = ruOpt.format || 'es6';
         if (typeof entry == 'string' && entry.length) {
             entry = entry.split(/\r?\n/g).map((entryPath) => _path.resolve(workDir, entryPath));
         }
@@ -48,11 +49,11 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             return;
         }
 
-        var moduleName = entry.map((entryPath) => {
-            var extName = _path.extname(entryPath),
-                name = _path.basename(entryPath, extName);
-            return name.replace(/(\-\w)/g, function (m) { return m[1].toUpperCase(); });
-        });
+        // var moduleName = entry.map((entryPath) => {
+        //     var extName = _path.extname(entryPath),
+        //         name = _path.basename(entryPath, extName);
+        //     return name.replace(/(\-\w)/g, function (m) { return m[1].toUpperCase(); });
+        // });
 
         var plugin = [],
             ruOptPlugins = ruOpt.plugins;
@@ -69,15 +70,12 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             }));
         }
 
-        gulp.src(pattern, { base: workDir })
+        gulp.src(entry, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.rollup({
-                entry: entry,
-                format: 'iife',
-                moduleName: '_bundle',
-                impliedExtensions: ['.js', '.es6', '.jsx'],
-                plugins: plugin
-            }))
+            .pipe(plugins.rollup(
+                { plugins: plugin },
+                { format: format }
+            ))
             .pipe(gulp.dest(workDir))
             .on('end', _finish);
 
