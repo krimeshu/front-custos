@@ -56,7 +56,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         // });
 
         var plugin = [],
-            ruOptPlugins = ruOpt.plugins;
+            ruOptPlugins = ruOpt.plugins || {};
         if (ruOptPlugins.nodeResolve) {
             plugin.push(plugins.rollupPluginNodeResolve({ jsnext: true, main: true, browser: true }));
         }
