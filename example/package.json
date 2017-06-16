@@ -10,12 +10,13 @@
       "browsers": "Android > 2.3, iOS > 6.0"
     },
     "ruOpt": {
-      "entry": "js/use-small-module.js",
+      "entry": "",
       "plugins": {
         "nodeResolve": true,
         "commonJS": true,
-        "babel": true
-      } 
+        "babel": true,
+        "vue": true
+      }
     },
     "alOpt": {
       "allot": true,
