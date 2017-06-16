@@ -1,4 +1,5 @@
 /**
+ * 获取编译前后的文件名关系
  * Created by krimeshu on 2016/5/15.
  */
 
@@ -14,6 +15,8 @@ module.exports = {
         switch (extName) {
             case '.es6':
             case '.coffee':
+            case '.vue':
+            case '.jsx':
             case '.ts':
                 compiledFilePath = _path.resolve(dirName, originalBaseName + '.js');
                 break;
@@ -47,6 +50,16 @@ module.exports = {
                         break;
                     }
                     fileName = compiledBaseName + '.coffee';
+                    if (this._existsFileUnderDirIgnoreCase(dirName, fileName)) {
+                        originalFilePath = _path.resolve(dirName, fileName);
+                        break;
+                    }
+                    fileName = compiledBaseName + '.vue';
+                    if (this._existsFileUnderDirIgnoreCase(dirName, fileName)) {
+                        originalFilePath = _path.resolve(dirName, fileName);
+                        break;
+                    }
+                    fileName = compiledBaseName + '.jsx';
                     if (this._existsFileUnderDirIgnoreCase(dirName, fileName)) {
                         originalFilePath = _path.resolve(dirName, fileName);
                         break;

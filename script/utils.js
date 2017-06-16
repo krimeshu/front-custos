@@ -231,7 +231,7 @@ exports.getFileType = function (file) {
                 exports.getFileType._fileTypes = {
                     page: ['.php', '.html', '.shtml'],
                     style: ['.css', '.sass', '.scss'],
-                    script: ['.js', '.es6', '.coffee'],
+                    script: ['.js', '.jsx', '.es6', '.vue', '.ts', '.coffee'],
                     image: ['.jpg', '.jpeg', '.png', '.gif'],
                     font: ['.eot', '.svg', '.ttf', '.woff', '.woff2'],
                     audio: ['.mp3', '.wav', '.ogg']

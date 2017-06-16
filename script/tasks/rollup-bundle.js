@@ -15,13 +15,14 @@ PluginLoader.add({ 'rollup': () => require('gulp-better-rollup') });
 PluginLoader.add({ 'rollupPluginNodeResolve': () => require('rollup-plugin-node-resolve') });
 PluginLoader.add({ 'rollupPluginCommonJS': () => require('rollup-plugin-commonjs') });
 PluginLoader.add({ 'rollupPluginBabel': () => require('rollup-plugin-babel') });
+PluginLoader.add({ 'rollupPluginVue': () => require('rollup-plugin-vue') });
 
 // 使用Rollup打包JS:
 // - 内容中存在某行 'rollup entry'; 标记的脚本将被识别为入口进行打包
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
         var workDir = params.workDir,
-            pattern = _path.resolve(workDir, '**/*@(.js|.es6|.jsx)'),
+            pattern = _path.resolve(workDir, '**/*@(.js|.es6|.jsx|.vue)'),
             ruOpt = params.ruOpt || {};
 
         var timer = new Timer();
@@ -62,6 +63,9 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         }
         if (ruOptPlugins.commonJS) {
             plugin.push(plugins.rollupPluginCommonJS());
+        }
+        if (ruOptPlugins.vue) {
+            plugin.push(plugins.rollupPluginVue());
         }
         if (ruOptPlugins.babel) {
             plugin.push(plugins.rollupPluginBabel({
