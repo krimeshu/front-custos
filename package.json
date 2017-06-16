@@ -1,6 +1,6 @@
 {
   "name": "front-custos",
-  "version": "1.8.4",
+  "version": "1.9.4",
   "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
@@ -32,6 +32,7 @@
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^7.0.0",
     "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-vue": "^2.4.0",
     "run-sequence": "^1.2.1",
     "spritesmith": "^3.1.0",
     "through2": "^2.0.1"
