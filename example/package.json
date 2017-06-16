@@ -43,6 +43,7 @@
       "sprite_crafter",
       "run_csso",
       "join_include",
+      "find_bundle_entry",
       "rollup_bundle",
       "run_browserify",
       "allot_link",
