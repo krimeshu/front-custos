@@ -15,19 +15,17 @@ var _os = require('os'),
     TaskErrorHandler = require('./script/task-error-handler.js'),
     FilenameHelper = require('./script/filename-helper.js');
 
-PluginLoader.add({'ConstReplacer': ()=> require('./script/plugins/const-replacer.js')});
+PluginLoader.add({ 'ConstReplacer': () => require('./script/plugins/const-replacer.js') });
 
-var config = {delUnusedFiles: true},
+var config = { delUnusedFiles: true },
     running = false,
     taskManager = new TaskManager();
 
-module.exports = {
+var FrontCustos = {
     // 编译前后文件名转换管理
     FilenameHelper: FilenameHelper,
     // 接管console
     takeOverConsole: ConsoleProxy.takeOverConsole.bind(ConsoleProxy),
-    // 所有可用任务列表
-    availableTasks: taskManager.availableTasks,
     // 补全并按序排列任务
     fillAndOrderTasks: taskManager.fillAndOrderTasks.bind(taskManager),
     // 直接执行任务
@@ -113,5 +111,14 @@ module.exports = {
             console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + projName + ' 任务结束。（共计' + timer.getTime() + 'ms）');
             cb && cb();
         });
+    },
+    welcome: function () {
+        var version = require('./package.json').version;
+        console.log('Front Custos - v' + version);
+        console.log(new Array(41).join('='));
     }
 };
+
+FrontCustos.welcome();
+
+module.exports = FrontCustos;

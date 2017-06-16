@@ -1,0 +1,24 @@
+<template>
+    <div class="container">
+        <p v-for="item in list" :data-total="total">
+            {{item}}
+        </p>    
+    </div>
+</template>
+
+<script>
+export default {
+    data: function () {
+        return {
+            list: ['hello', 'world'],
+            total: 123
+        }
+    }
+}
+</script>
+
+<style scoped>
+.container {
+    background: #eff;
+}
+</style>

@@ -1,9 +1,14 @@
 {
   "name": "front-custos",
+<<<<<<< HEAD
   "version": "1.5.3",
+=======
+  "version": "1.8.4",
+>>>>>>> 092d506c2a1f19713feaf4133b6995a81b9478ef
   "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
+    "electron-rebuild": "gulp electron-rebuild",
     "test": "node test"
   },
   "author": "krimeshu",
@@ -18,13 +23,13 @@
     "glob": "^7.0.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
+    "gulp-better-rollup": "^1.1.1",
     "gulp-cache": "^0.4.5",
     "gulp-csso": "^2.0.0",
     "gulp-imagemin": "^3.0.1",
     "gulp-plumber": "^1.1.0",
-    "gulp-rollup": "^2.11.0",
     "gulp-sass": "^2.3.1",
-    "imagemin-pngquant": "^5.0.0",
+    "imagemin-pngquant": "^5.0.1",
     "node-sass": "^3.7.0",
     "postcss": "^5.0.21",
     "request": "^2.72.0",
