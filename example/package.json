@@ -10,13 +10,14 @@
       "browsers": "Android > 2.3, iOS > 6.0"
     },
     "ruOpt": {
-      "entry": "",
+      "entry": "js/use-es6-module.js",
       "plugins": {
         "nodeResolve": true,
         "commonJS": true,
         "babel": true,
         "vue": true
-      }
+      },
+      "format": "es6"
     },
     "alOpt": {
       "allot": true,
@@ -43,7 +44,6 @@
       "sprite_crafter",
       "run_csso",
       "join_include",
-      "find_bundle_entry",
       "rollup_bundle",
       "run_browserify",
       "allot_link",

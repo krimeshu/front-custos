@@ -5,7 +5,7 @@ var fs = require('fs'),
     gulp = require('gulp'),
     copyDir = require('copy-dir'),
     del = require('del'),
-    
+
     electronPackage = require('../node_modules/electron/package.json'),
     rebuild = require('../node_modules/electron-rebuild').default;
 
@@ -15,10 +15,7 @@ var electronVersion = electronPackage.version;
 gulp.task('electron-rebuild', function (done) {
     var arch = process.arch;
     console.log('Rebuilding...');
-    var nodeSassDir = path.resolve('./node_modules/node-sass'),
-        binDir = path.resolve(nodeSassDir, 'bin'),
-        buildDir = path.resolve(nodeSassDir, 'build'),
-        vendorDir = path.resolve(nodeSassDir, 'vendor');
+    var delQueue = [];
     rebuild(__dirname, electronVersion, arch, ['node-sass'], true)
         .then(function () {
             console.log('Rebuild successful!');
@@ -26,27 +23,13 @@ gulp.task('electron-rebuild', function (done) {
         })
         .then(function () {
             console.log('Copying node-sass rebuilt to vendor dir...');
-            fs.readdirSync(binDir).forEach(function (fileName) {
-                // console.log(fileName);
-                var filePath = path.resolve(binDir, fileName);
-                if (!fs.statSync(filePath).isDirectory()) {
-                    return;
-                }
-                var nodeFilePath = path.resolve(filePath, 'node-sass.node');
-                if (!fs.existsSync(nodeFilePath)) {
-                    return;
-                }
-                fs.renameSync(nodeFilePath, path.resolve(filePath, 'binding.node'));
-            });
-            copyDir.sync(
-                binDir,
-                vendorDir
-            );
+            useBuiltNodeSass(path.resolve('./node_modules/node-sass'));
+            useBuiltNodeSass(path.resolve('./node_modules/rollup-plugin-vue/node_modules/node-sass'));
             console.log('Copy finished.');
         })
         .then(function () {
             console.log('Cleaning build directory...');
-            del([buildDir]).then(function () {
+            del(delQueue).then(function () {
                 console.log('Clean build directory finished.');
                 done();
             });
@@ -54,4 +37,27 @@ gulp.task('electron-rebuild', function (done) {
         .catch(function (e) {
             console.error('Rebuilding modules against Electron didn\'t work: ' + e);
         });
+
+    function useBuiltNodeSass(nodeSassDir) {
+        var binDir = path.resolve(nodeSassDir, 'bin'),
+            buildDir = path.resolve(nodeSassDir, 'build'),
+            vendorDir = path.resolve(nodeSassDir, 'vendor')
+        fs.readdirSync(binDir).forEach(function (fileName) {
+            // console.log(fileName);
+            var filePath = path.resolve(binDir, fileName);
+            if (!fs.statSync(filePath).isDirectory()) {
+                return;
+            }
+            var nodeFilePath = path.resolve(filePath, 'node-sass.node');
+            if (!fs.existsSync(nodeFilePath)) {
+                return;
+            }
+            fs.renameSync(nodeFilePath, path.resolve(filePath, 'binding.node'));
+        });
+        copyDir.sync(
+            binDir,
+            vendorDir
+        );
+        delQueue.push(buildDir);
+    }
 });

@@ -35,7 +35,8 @@
     "rollup-plugin-vue": "^2.4.0",
     "run-sequence": "^1.2.1",
     "spritesmith": "^3.1.0",
-    "through2": "^2.0.1"
+    "through2": "^2.0.1",
+    "vue": "^2.3.4"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,5 @@
 import { foo } from './lib/small-module';
 import { foo as foo2 } from './lib/sub-module';
-import Vue from './lib/vue';
 import hello from './hello.vue';
 
 foo();

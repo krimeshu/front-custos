@@ -65,7 +65,9 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             plugin.push(plugins.rollupPluginCommonJS());
         }
         if (ruOptPlugins.vue) {
-            plugin.push(plugins.rollupPluginVue());
+            plugin.push(plugins.rollupPluginVue({
+                css: true
+            }));
         }
         if (ruOptPlugins.babel) {
             plugin.push(plugins.rollupPluginBabel({
