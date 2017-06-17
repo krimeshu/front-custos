@@ -24,7 +24,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         gulp.src(pattern)
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
             .pipe(plugins.babel({
-                presets: [plugins.babelPresetEs2015]
+                presets: [plugins.babelPresetEs2015, plugins.babelPresetReact]
             }).on('error', function () {
                 // errorHandler(err);
                 this.emit('end');

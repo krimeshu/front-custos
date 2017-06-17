@@ -71,7 +71,10 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         }
         if (ruOptPlugins.babel) {
             plugin.push(plugins.rollupPluginBabel({
-                presets: [[plugins.babelPresetEs2015.buildPreset, { modules: false }]],
+                presets: [
+                    [plugins.babelPresetEs2015.buildPreset, { modules: false }],
+                    plugins.babelPresetReact
+                ],
                 plugins: [plugins.babelPluginExternalHelpers]
             }));
         }

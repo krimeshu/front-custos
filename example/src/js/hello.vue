@@ -10,7 +10,7 @@
 export default {
     data: function () {
         return {
-            list: ['hello', 'world'],
+            list: ['hello world', '-- vue'],
             total: 123
         }
     }
