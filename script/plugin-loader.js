@@ -64,6 +64,7 @@ _this.add({'csso': ()=> require('gulp-csso')});
 _this.add({'imagemin': ()=> require('gulp-imagemin')});
 _this.add({'sass': ()=> require('gulp-sass')});
 _this.add({'babel': ()=> require('gulp-babel')});
+_this.add({'sourcemaps': ()=> require('gulp-sourcemaps')});
 _this.add({'babelPresetEs2015': ()=> require('babel-preset-es2015')});
 _this.add({'babelPresetReact': ()=> require('babel-preset-react')});
 _this.add({'babelPluginExternalHelpers': ()=> require('babel-plugin-external-helpers')});

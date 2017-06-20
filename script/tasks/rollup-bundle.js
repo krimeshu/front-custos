@@ -81,10 +81,12 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
 
         gulp.src(entry, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
+            .pipe(plugins.sourcemaps.init())
             .pipe(plugins.rollup(
                 { plugins: plugin },
                 { format: format }
             ))
+            .pipe(plugins.sourcemaps.write(''))
             .pipe(gulp.dest(workDir))
             .on('end', _finish);
 

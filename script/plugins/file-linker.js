@@ -24,7 +24,7 @@ var FileLinker = function (opts, onError) {
 FileLinker.prototype = {
     // 用于匹配语法的正则表达式
     _regExp: /(?:\/\/)?[#_]link\(['"]?([^\)'"]+)['"]?\)/gi,
-    _regExpHtml: /<(?:link|script|img|audio|video|source)[^>]*(?:href|src|data\-src)\s*=\s*['"]?([^<>'"\$]+)[<>'"\$]?[^>]*>/gi,
+    _regExpHtml: /<(?:link|script|img|audio|video|source)[^>]*[^:](?:href|src|data\-src)\s*=\s*['"]?([^<>'"\$]+)[<>'"\$]?[^>]*>/gi,
     _regExpCss: /[,:\s\b\f\n\t\r]url\(['"]?([^\)'"]+)['"]?\)/gi,
     // 文件指纹添加方式（不添加/作为URL参数/作为文件名后缀）
     _hashLinkTypes: {
