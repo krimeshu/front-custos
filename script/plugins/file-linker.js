@@ -24,6 +24,7 @@ var FileLinker = function (opts, onError) {
 FileLinker.prototype = {
     // 用于匹配语法的正则表达式
     _regExp: /(?:\/\/)?[#_]link\(['"]?([^\)'"]+)['"]?\)/gi,
+    _regExpMap: /\/\/\s*#\s*sourceMappingURL=['"]?(.*?)['"]?\s*$/gi,
     _regExpHtml: /<(?:link|script|img|audio|video|source)[^>]*[^:](?:href|src|data\-src)\s*=\s*['"]?([^<>'"\$]+)[<>'"\$]?[^>]*>/gi,
     _regExpCss: /[,:\s\b\f\n\t\r]url\(['"]?([^\)'"]+)['"]?\)/gi,
     // 文件指纹添加方式（不添加/作为URL参数/作为文件名后缀）
@@ -37,7 +38,8 @@ FileLinker.prototype = {
         var self = this,
             reg = type === 'css' ? self._regExpCss :
                 type === 'html' ? self._regExpHtml :
-                    self._regExp;
+                    type === 'map' ? self._regExpMap :
+                        self._regExp;
         return new RegExp(reg);
     },
     // 分析项目的文件引用关系
@@ -115,10 +117,14 @@ FileLinker.prototype = {
             basePath = Utils.replaceBackSlash(file.base),
             filePath = Utils.replaceBackSlash(file.path),
             dir = _path.dirname(filePath),
+            isScript = Utils.isScript(filePath),
             isStyle = Utils.isStyle(filePath),
             isHtml = Utils.isPage(filePath),
             opts = self.opts || {},
             htmlEnhanced = opts.htmlEnhanced;
+        if (isScript || isStyle) {
+            usedFiles = usedFiles.concat(self._getUsedMapFiles(file, cb));
+        }
         if (isStyle) {
             usedFiles = usedFiles.concat(self._getUsedFilesByCssUrl(file, cb));
         }
@@ -172,6 +178,61 @@ FileLinker.prototype = {
             file.contents = new Buffer(newContent);
         }
         //console.log(' |  getUsedFiles:', usedFiles);
+        return usedFiles;
+    },
+    // 匹配代码中的 sourcemap url 来获取文件引用依赖关系
+    _getUsedMapFiles: function (file, cb) {
+        var self = this,
+            reg = self._getRegExp('map'),
+            match,
+            basePath = Utils.replaceBackSlash(file.base),
+            filePath = Utils.replaceBackSlash(file.path),
+            dir = _path.dirname(filePath),
+            usedFiles = [];
+        //console.log('================================================================================');
+        //console.log('> FileLinker._getUsedMapFiles - file:', filePath);
+
+        var content = String(file.contents),
+            newContent = content;
+
+        while ((match = reg.exec(content)) !== null) {
+            var _rawStr = match[0],
+                _rawFile = match[1],
+                _file = _rawFile && _rawFile.split(/[?#]/)[0];
+            if (!_file || self._canIgnoreLink(_rawFile)) {
+                continue;
+            }
+            //console.log('    ~ find:', _rawStr);
+            if (!_path.isAbsolute(_file)) {
+                _file = _path.resolve(dir, _file);
+            }
+            if (!_fs.existsSync(_file)) {
+                //console.log('  but miss: ', _file);
+                var information = '无法链接文件：' + _path.relative(basePath, _file),
+                    err = new Error(information);
+                err.fromFile = _path.relative(basePath, filePath);
+                err.line = Utils.countLineNumber(content, match);
+                err.targetFile = _path.relative(basePath, _file);
+                self.onError && self.onError(err);
+                continue;
+            }
+            if (!_fs.statSync(_file).isFile()) {
+                continue;
+            }
+            usedFiles.push(_file);
+            if (cb) {
+                var _newFile = cb(_rawFile, _file),       // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
+                    _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')),  // 注意，与上面不同
+                    _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+                    _reg = new RegExp(_pattern, 'g');
+                //console.log(_rawStr, '=>', _newStr);
+                newContent = newContent.replace(_reg, _newStr.replace(/\u0024([$`&'])/g, '$$$$$1'));
+            }
+        }
+        if (cb) {
+            file.contents = new Buffer(newContent);
+        }
+        //console.log(' |  _getUsedMapFiles:', usedFiles);
         return usedFiles;
     },
     // 匹配CSS代码中的url来获取文件引用依赖关系

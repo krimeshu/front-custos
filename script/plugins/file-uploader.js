@@ -238,6 +238,15 @@ FileUploader.prototype = {
                             err = new Error('上传结果判断脚本执行异常');
                             err.detailError = e;
                         }
+                        if (Array.isArray(judgeResult)) {
+                            let arr = judgeResult;
+                            judgeResult = arr[0];
+                            err = arr[1];
+                        }
+                        try {
+                            response = JSON.parse(response);
+                        } catch (e) {
+                        }
                         if (!err && judgeResult) {
                             _onSucceed(response, done);
                         } else {
