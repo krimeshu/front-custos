@@ -83,6 +83,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
             .pipe(plugins.sourcemaps.init())
             .pipe(plugins.rollup(
+                // { plugins: plugin, onwarn: console.warn.bind(console) },
                 { plugins: plugin },
                 { format: format }
             ))

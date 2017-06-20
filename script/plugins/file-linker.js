@@ -24,7 +24,7 @@ var FileLinker = function (opts, onError) {
 FileLinker.prototype = {
     // 用于匹配语法的正则表达式
     _regExp: /(?:\/\/)?[#_]link\(['"]?([^\)'"]+)['"]?\)/gi,
-    _regExpMap: /\/\/\s*#\s*sourceMappingURL=['"]?(.*?)['"]?\s*$/gi,
+    _regExpMap: /(?:\/\/|\/\*)\s*#\s*sourceMappingURL=['"]?(.*?)['"]?\s*(\*\/\s*)?($|\n)/gi,
     _regExpHtml: /<(?:link|script|img|audio|video|source)[^>]*[^:](?:href|src|data\-src)\s*=\s*['"]?([^<>'"\$]+)[<>'"\$]?[^>]*>/gi,
     _regExpCss: /[,:\s\b\f\n\t\r]url\(['"]?([^\)'"]+)['"]?\)/gi,
     // 文件指纹添加方式（不添加/作为URL参数/作为文件名后缀）
@@ -80,6 +80,7 @@ FileLinker.prototype = {
     _getFileDep: function (filePath, cache, src) {
         var self = this,
             depList = [],
+            isSourcemap = Utils.isSourcemap(filePath),
             isText = Utils.isText(filePath);
         if (!isText) {
             return depList;
@@ -119,6 +120,7 @@ FileLinker.prototype = {
             dir = _path.dirname(filePath),
             isScript = Utils.isScript(filePath),
             isStyle = Utils.isStyle(filePath),
+            isSourcemap = Utils.isSourcemap(filePath),
             isHtml = Utils.isPage(filePath),
             opts = self.opts || {},
             htmlEnhanced = opts.htmlEnhanced;
@@ -127,6 +129,10 @@ FileLinker.prototype = {
         }
         if (isStyle) {
             usedFiles = usedFiles.concat(self._getUsedFilesByCssUrl(file, cb));
+        }
+        if (isSourcemap) {
+            self._handleUsedFilesByMap(file, cb);
+            return usedFiles;
         }
         if (isHtml) {
             usedFiles = usedFiles.concat(htmlEnhanced ?
@@ -234,6 +240,40 @@ FileLinker.prototype = {
         }
         //console.log(' |  _getUsedMapFiles:', usedFiles);
         return usedFiles;
+    },
+    // 处理 sourcemap 中使用到的文件路径（只做替换，不算作使用，不保持依赖以免上传）
+    _handleUsedFilesByMap: function (file, cb) {
+        var self = this,
+            match,
+            basePath = Utils.replaceBackSlash(file.base),
+            filePath = Utils.replaceBackSlash(file.path),
+            dir = _path.dirname(filePath);
+
+        var basePattern = basePath.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+            regExp = new RegExp('[\'"](' + basePattern + '[^\'"]*)[\'"]', 'gi');
+
+        var content = String(file.contents),
+            newContent = content;
+
+        while ((match = regExp.exec(content)) !== null) {
+            var _rawStr = match[0],
+                _rawFile = match[1],
+                _file = _rawFile && _rawFile.split(/[?#]/)[0];
+            if (!_file || self._canIgnoreLink(_rawFile)) {
+                continue;
+            }
+            if (cb) {
+                var _newFile = Utils.replaceBackSlash(_path.relative(basePath, _file)),
+                    _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')),
+                    _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+                    _reg = new RegExp(_pattern, 'g');
+                //console.log(_rawStr, '=>', _newStr);
+                newContent = newContent.replace(_reg, _newStr.replace(/\u0024([$`&'])/g, '$$$$$1'));
+            }
+        }
+        if (cb) {
+            file.contents = new Buffer(newContent);
+        }
     },
     // 匹配CSS代码中的url来获取文件引用依赖关系
     _getUsedFilesByCssUrl: function (file, cb) {
@@ -463,7 +503,7 @@ FileLinker.prototype = {
                 dirName = _path.dirname(filePath),
                 baseName = _path.basename(filePath),
                 extName = _path.extname(filePath),
-                flattenDir = flattenMap[fileType] || '',
+                flattenDir = flattenMap[fileType] || flattenMap.other || '',
 
                 pathParts = filePath.split('/');
 
@@ -501,7 +541,7 @@ FileLinker.prototype = {
 
             //console.log(_path.relative(src, filePath), '=>', _path.relative(src, newFilePath));
 
-            isText && self.getUsedFiles(file, function (_rawFile, _filePath) {
+            isText && self.getUsedFiles(file, function mapNewPath(_rawFile, _filePath) {
                 var _hash = '';
                 if (hashLink != hashLinkTypes.NO_HASH) {
                     // 需要处理文件指纹
@@ -514,7 +554,7 @@ FileLinker.prototype = {
                     _dirName = _path.dirname(_filePath),
                     _baseName = _path.basename(_filePath),
                     _extName = _path.extname(_filePath),
-                    _flattenDir = flattenMap[_fileType] || '';
+                    _flattenDir = flattenMap[_fileType] || flattenMap.other || '';
 
                 if (!_isPage && hashLink == hashLinkTypes.IN_FILE_NAME) {
                     // 文件指纹作为文件名后缀

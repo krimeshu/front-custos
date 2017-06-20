@@ -10,7 +10,7 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-PluginLoader.add({'prefixCrafterProxy': ()=> require('../plugins/prefix-crafter-proxy.js')});
+PluginLoader.add({ 'prefixCrafterProxy': () => require('../plugins/prefix-crafter-proxy.js') });
 
 // 前缀处理：
 // - 使用 Prefix Crafter（基于 autoprefixer）处理CSS，自动添加需要的浏览器前缀
@@ -25,8 +25,10 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         logId && console.useId && console.useId(logId);
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(pattern)
-            .pipe(plugins.plumber({'errorHandler': errorHandler}))
-            .pipe(plugins.prefixCrafterProxy.process(pcOpt, errorHandler))
+            .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
+            .pipe(plugins.sourcemaps.init())
+            .pipe(plugins.postcss([plugins.autoprefixer]))
+            .pipe(plugins.sourcemaps.write(''))
             .pipe(gulp.dest(workDir))
             .on('end', function () {
                 logId && console.useId && console.useId(logId);

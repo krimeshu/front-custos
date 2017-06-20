@@ -23,10 +23,12 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(pattern)
             .pipe(plugins.plumber({'errorHandler': errorHandler}))
+            .pipe(plugins.sourcemaps.init())
             .pipe(plugins.sass().on('error', function () {
                 // errorHandler(err);
                 this.emit('end');
             }))
+            .pipe(plugins.sourcemaps.write(''))
             .pipe(gulp.dest(workDir))
             .on('end', function () {
                 logId && console.useId && console.useId(logId);

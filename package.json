@@ -1,6 +1,6 @@
 {
   "name": "front-custos",
-  "version": "1.11.2",
+  "version": "1.12.1",
   "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,7 @@
     "gulp-csso": "^2.0.0",
     "gulp-imagemin": "^3.0.1",
     "gulp-plumber": "^1.1.0",
+    "gulp-postcss": "^7.0.0",
     "gulp-sass": "^2.3.1",
     "gulp-sourcemaps": "^2.6.0",
     "imagemin-pngquant": "^5.0.1",

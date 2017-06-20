@@ -232,6 +232,7 @@ exports.getFileType = function (file) {
                     page: ['.php', '.html', '.shtml'],
                     style: ['.css', '.sass', '.scss'],
                     script: ['.js', '.jsx', '.es6', '.vue', '.ts', '.coffee'],
+                    sourcemap: ['.map'],
                     image: ['.jpg', '.jpeg', '.png', '.gif'],
                     font: ['.eot', '.svg', '.ttf', '.woff', '.woff2'],
                     audio: ['.mp3', '.wav', '.ogg']
@@ -249,7 +250,7 @@ exports.getFileType = function (file) {
 };
 exports.isText = function (file) {
     var type = exports.getFileType(file);
-    return type === 'page' || type === 'style' || type === 'script';
+    return type === 'page' || type === 'style' || type === 'script' || type === 'sourcemap';
 };
 exports.isPage = function (file) {
     var type = exports.getFileType(file);
@@ -262,6 +263,10 @@ exports.isStyle = function (file) {
 exports.isScript = function (file) {
     var type = exports.getFileType(file);
     return type === 'script';
+};
+exports.isSourcemap = function (file) {
+    var type = exports.getFileType(file);
+    return type === 'sourcemap';
 };
 exports.isImage = function (file) {
     var type = exports.getFileType(file);
