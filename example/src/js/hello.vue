@@ -18,7 +18,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+%flex {
+    display: flex;
+}
 .container {
+    @extend %flex;
     background: #eff;
 }
 </style>

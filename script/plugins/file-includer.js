@@ -99,99 +99,101 @@ FileIncluder.prototype = {
     handleFile: function () {
         var self = this;
         return Through2.obj(function (file, enc, cb) {
-                var basePath = Utils.replaceBackSlash(file.base),
-                    filePath = Utils.replaceBackSlash(file.path),
-                    dirPath = _path.dirname(filePath),
-                    isDir = file.isDirectory(),
-                    isText = !isDir && Utils.isText(filePath),
-                    content = isText ? String(file.contents) : file.contents,
-                    baseName = _path.basename(filePath),
-                    extName = _path.extname(filePath),
-                    ignoreSass = /\.(scss|sass)/i.test(extName) && baseName.charAt(0) === '_';
+            var basePath = Utils.replaceBackSlash(file.base),
+                filePath = Utils.replaceBackSlash(file.path),
+                dirPath = _path.dirname(filePath),
+                isDir = file.isDirectory(),
+                isText = !isDir && Utils.isText(filePath),
+                content = isText ? String(file.contents) : file.contents,
+                baseName = _path.basename(filePath),
+                extName = _path.extname(filePath),
+                ignoreSass = /\.(scss|sass)/i.test(extName) && baseName.charAt(0) === '_';
 
-                //console.log('================================================================================');
-                //console.log('> FileIncluder - file:', filePath);
+            //console.log('================================================================================');
+            //console.log('> FileIncluder - file:', filePath);
 
-                var newContent = content,
-                    cache = self.resultCache,
-                    reg = self._getRegExp(),
-                    match;
+            var newContent = content,
+                cache = self.resultCache,
+                reg = self._getRegExp(),
+                match;
 
-                while (!ignoreSass && isText && (match = reg.exec(content)) !== null) {
-                    var _str = match[0],
-                        _rawFile = match[1],
-                        _json = match[2],
-                        _file = _rawFile && _rawFile.split(/[?#]/)[0];
-                    if (!_rawFile) {
-                        continue;
-                    }
-                    var _para = null,
-                        _inlineString = false,
-                        _fragName = null;
-                    if (_json) {
-                        try {
-                            _para = JSON.parse(_json.substr(1));
-                            _inlineString = !!_para['_inlineString'];
-                            _fragName = String(_para['_fragName'] || '')
-                                .replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1');
-                        } catch (ex) {
-                            self.onError && self.onError(ex);
-                            continue;
-                        }
-                    }
-                    if (!_path.isAbsolute(_file)) {
-                        _file = _path.resolve(dirPath, _file);
-                    }
-                    _file = Utils.replaceBackSlash(_file);
-                    if (!cache.hasOwnProperty(_file)) {
-                        var information = '无法包含文件：' + _path.relative(basePath, _file),
-                            err = new Error(information);
-                        err.fromFile = _path.relative(basePath, filePath);
-                        err.line = Utils.countLineNumber(content, match);
-                        err.targetFile = _path.relative(basePath, _file);
-                        self.onError && self.onError(err);
-                        continue;
-                    }
-                    var _content = cache[_file],
-                        _extName = _path.extname(_file);
-                    if (Utils.isImage(_file)) {
-                        _content = 'data:image/' + _extName.substr(1) +
-                            ';base64, ' + _content.toString('base64');
-                    } else if (isText) {
-                        if (_inlineString) {
-                            _content = _content
-                                .replace(/("|')/g, '\\$1')
-                                .replace(/\r/g, '\\r')
-                                .replace(/\n/g, '\\n');
-                        }
-                        if (_fragName) {
-                            _content = _content.split(new RegExp(
-                                    '(?:\\/\\*!?|\\/\\/|<!--)\\s*fragBegin\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
-                                ))[1] || '';
-                            _content = _content.split(new RegExp(
-                                    '(?:\\/\\*!?|\\/\\/|<!--)\\s*fragEnd\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
-                                ))[0] || '';
-                        }
-                        if (_para) {
-                            for (var key in _para) {
-                                if (!_para.hasOwnProperty(key)) {
-                                    continue;
-                                }
-                                key = key.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1');
-                                var value = String(_para[key]),
-                                    valueReg = new RegExp('#' + key + '#', 'g');
-                                _content = _content.replace(valueReg, value.replace(/\u0024([$`&'])/g, '$$$$$1'));
-                            }
-                        }
-                    }
-                    newContent = newContent.replace(_str, _content.replace(/\u0024([$`&'])/g, '$$$$$1'));
+            while (!ignoreSass && isText && (match = reg.exec(content)) !== null) {
+                var _str = match[0],
+                    _rawFile = match[1],
+                    _json = match[2],
+                    _file = _rawFile && _rawFile.split(/[?#]/)[0];
+                if (!_rawFile) {
+                    continue;
                 }
-
-                cache[filePath] = newContent;
-                file.contents = isText ? new Buffer(newContent) : newContent;
-
-                return cb(null, file);
+                var _para = null,
+                    _inlineString = false,
+                    _fragName = null;
+                if (_json) {
+                    try {
+                        _para = JSON.parse(_json.substr(1));
+                        _inlineString = !!_para['_inlineString'];
+                        _fragName = String(_para['_fragName'] || '')
+                            .replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1');
+                    } catch (ex) {
+                        self.onError && self.onError(ex);
+                        continue;
+                    }
+                }
+                if (!_path.isAbsolute(_file)) {
+                    _file = _path.resolve(dirPath, _file);
+                }
+                _file = Utils.replaceBackSlash(_file);
+                if (!cache.hasOwnProperty(_file)) {
+                    var information = '无法包含文件：' + _path.relative(basePath, _file),
+                        err = new Error(information);
+                    err.fromFile = _path.relative(basePath, filePath);
+                    err.line = Utils.countLineNumber(content, match);
+                    err.targetFile = _path.relative(basePath, _file);
+                    self.onError && self.onError(err);
+                    continue;
+                }
+                var _content = cache[_file],
+                    _extName = _path.extname(_file);
+                if (Utils.isImage(_file)) {
+                    _content = 'data:image/' + _extName.substr(1) +
+                        ';base64, ' + _content.toString('base64');
+                } else if (isText) {
+                    // 去掉已经失效的 sourcemap
+                    _content = _content.replace(/(?:\/\/|\/\*)\s*#\s*sourceMappingURL=['"]?(.*?)['"]?\s*(\*\/\s*)?($|\n)/gi, '');
+                    if (_inlineString) {
+                        _content = _content
+                            .replace(/("|')/g, '\\$1')
+                            .replace(/\r/g, '\\r')
+                            .replace(/\n/g, '\\n');
+                    }
+                    if (_fragName) {
+                        _content = _content.split(new RegExp(
+                            '(?:\\/\\*!?|\\/\\/|<!--)\\s*fragBegin\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
+                        ))[1] || '';
+                        _content = _content.split(new RegExp(
+                            '(?:\\/\\*!?|\\/\\/|<!--)\\s*fragEnd\\s*:\\s*' + _fragName + '\\s*(?:\\*\\/|-->)?'
+                        ))[0] || '';
+                    }
+                    if (_para) {
+                        for (var key in _para) {
+                            if (!_para.hasOwnProperty(key)) {
+                                continue;
+                            }
+                            key = key.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1');
+                            var value = String(_para[key]),
+                                valueReg = new RegExp('#' + key + '#', 'g');
+                            _content = _content.replace(valueReg, value.replace(/\u0024([$`&'])/g, '$$$$$1'));
+                        }
+                    }
+                }
+                newContent = newContent.replace(_str, _content.replace(/\u0024([$`&'])/g, '$$$$$1'));
             }
+
+            cache[filePath] = newContent;
+            file.contents = isText ? new Buffer(newContent) : newContent;
+
+            return cb(null, file);
+        }
         ).resume();
     }
 };
