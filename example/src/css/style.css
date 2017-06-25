@@ -4,8 +4,19 @@ body {
   display: flex;
   justify-content: center; }
 
+.example {
+  display: flex;
+  animation: zoomIn 100ms ease; }
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0); }
+  to {
+    transform: scale(1); } }
+
 article {
-  width: 800px; }
+  width: 800px;
+  background: #cccccc; }
 
 pre {
   margin: 1.5em 0;
