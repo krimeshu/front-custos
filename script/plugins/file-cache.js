@@ -22,7 +22,7 @@ var utils = {
             this.makeDirs(dirPath, 511); // 511 = 0777
         }
     },
-    _textExtNames: ['.php', '.html', '.js', '.css', '.coffee', '.scss'],
+    _textExtNames: ['.php', '.html', '.js', '.jsx', '.vue', '.ts', '.es6', '.css', '.scss'],
     isText: function (file) {
         var extName = path.extname(file).toLowerCase();
         return this._textExtNames.indexOf(extName) >= 0;

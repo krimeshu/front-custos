@@ -17,8 +17,7 @@ var TaskList = [
     { name: 'run_browserify', load: () => require('./tasks/run-browserify'), desc: '通过browserify打包脚本' },
     { name: 'allot_link', load: () => require('./tasks/allot-link'), desc: '分发关联文件' },
     { name: 'optimize_image', load: () => require('./tasks/optimize-image'), desc: '压缩图片' },
-    { name: 'do_dist', load: () => require('./tasks/do-dist'), desc: '输出项目文件' },
-    { name: 'do_upload', load: () => require('./tasks/do-upload'), desc: '上传文件' }
+    { name: 'do_dist', load: () => require('./tasks/do-dist'), desc: '输出项目文件' }
 ];
 
 module.exports = TaskList;

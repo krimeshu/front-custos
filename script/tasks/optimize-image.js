@@ -55,13 +55,13 @@ module.exports = {
             var timer = new Timer();
             var logId = console.genUniqueId && console.genUniqueId();
             logId && console.useId && console.useId(logId);
-            console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 清空缓存中……');
+            console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 清空图片缓存中……');
 
             var cacheDirPath = _path.resolve(_os.tmpdir(), cacheDirName);
 
             function afterClean() {
                 logId && console.useId && console.useId(logId);
-                console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 缓存清空完毕。（' + timer.getTime() + 'ms）');
+                console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 图片缓存清空完毕。（' + timer.getTime() + 'ms）');
                 done();
             }
             var cleanFailed = function (e) {

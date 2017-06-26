@@ -15,7 +15,8 @@
         "nodeResolve": true,
         "commonJS": true,
         "babel": true,
-        "vue": true
+        "vue": true,
+        "postcssModules": true
       },
       "format": "es6"
     },

@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <p v-for="item in list" :data-total="total">
+        <p v-for="(item, idx) in list" :data-total="total" :key="idx">
             {{item}}
         </p>    
     </div>

@@ -14,7 +14,6 @@ module.exports = {
             compiledFilePath = null;
         switch (extName) {
             case '.es6':
-            case '.coffee':
             case '.vue':
             case '.jsx':
             case '.ts':
@@ -44,12 +43,7 @@ module.exports = {
         } else {
             switch (extName) {
                 case '.js':
-                    fileName = compiledBaseName + '.es6';
-                    if (this._existsFileUnderDirIgnoreCase(dirName, fileName)) {
-                        originalFilePath = _path.resolve(dirName, fileName);
-                        break;
-                    }
-                    fileName = compiledBaseName + '.coffee';
+                    fileName = compiledBaseName + '.jsx';
                     if (this._existsFileUnderDirIgnoreCase(dirName, fileName)) {
                         originalFilePath = _path.resolve(dirName, fileName);
                         break;
@@ -59,12 +53,12 @@ module.exports = {
                         originalFilePath = _path.resolve(dirName, fileName);
                         break;
                     }
-                    fileName = compiledBaseName + '.jsx';
+                    fileName = compiledBaseName + '.ts';
                     if (this._existsFileUnderDirIgnoreCase(dirName, fileName)) {
                         originalFilePath = _path.resolve(dirName, fileName);
                         break;
                     }
-                    fileName = compiledBaseName + '.ts';
+                    fileName = compiledBaseName + '.es6';
                     if (this._existsFileUnderDirIgnoreCase(dirName, fileName)) {
                         originalFilePath = _path.resolve(dirName, fileName);
                         break;

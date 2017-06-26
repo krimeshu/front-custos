@@ -503,9 +503,13 @@ FileLinker.prototype = {
                 dirName = _path.dirname(filePath),
                 baseName = _path.basename(filePath),
                 extName = _path.extname(filePath),
-                flattenDir = flattenMap[fileType] || flattenMap.other || '',
+                flattenDir = flattenMap[fileType],
 
                 pathParts = filePath.split('/');
+
+            if (typeof flattenDir != 'string') {
+                flattenDir = flattenMap.other || '';
+            }
 
             //console.log('================================================================================');
             //console.log('> FileLinker - file:', filePath);

@@ -17,7 +17,7 @@ PluginLoader.add({ 'ConstReplacer': () => require('../plugins/const-replacer.js'
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
         var workDir = params.workDir,
-            pattern = _path.resolve(workDir, '**/*@(.js|.css|.scss|.html|.shtml|.php)');
+            pattern = _path.resolve(workDir, '**/*@(.js|.jsx|.vue|.ts|.es6|.css|.scss|.html|.shtml|.php)');
 
         var timer = new Timer();
         var logId = console.genUniqueId && console.genUniqueId();

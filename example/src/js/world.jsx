@@ -1,6 +1,8 @@
+import style from './world.css';
+
 var HelloMessage = React.createClass({
   render: function() {
-    return <h1>Hello World --{this.props.name}</h1>;
+    return <h1 className={style.title}>Hello World --{this.props.name}</h1>;
   }
 });
 

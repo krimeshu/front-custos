@@ -16,13 +16,14 @@ PluginLoader.add({ 'rollupPluginNodeResolve': () => require('rollup-plugin-node-
 PluginLoader.add({ 'rollupPluginCommonJS': () => require('rollup-plugin-commonjs') });
 PluginLoader.add({ 'rollupPluginBabel': () => require('rollup-plugin-babel') });
 PluginLoader.add({ 'rollupPluginVue': () => require('rollup-plugin-vue') });
+PluginLoader.add({ 'rollupPluginPostcss': () => require('rollup-plugin-postcss') });
 
 // 使用Rollup打包JS:
 // - 内容中存在某行 'rollup entry'; 标记的脚本将被识别为入口进行打包
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
         var workDir = params.workDir,
-            pattern = _path.resolve(workDir, '**/*@(.js|.es6|.jsx|.vue)'),
+            pattern = _path.resolve(workDir, '**/*@(.js|.jsx|.vue|.ts|.es6|.vue)'),
             ruOpt = params.ruOpt || {};
 
         var timer = new Timer();
@@ -67,6 +68,21 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         if (ruOptPlugins.vue) {
             plugin.push(plugins.rollupPluginVue({
                 css: true
+            }));
+        }
+        if (ruOptPlugins.postcssModules) {
+            var cssExportMap = {};
+            plugin.push(plugins.rollupPluginPostcss({
+                plugins: [
+                    plugins.postcssModules({
+                        getJSON: function (id, exportTokens) {
+                            cssExportMap[id] = exportTokens;
+                        }
+                    })
+                ],
+                getExport: function (id) {
+                    return cssExportMap[id];
+                }
             }));
         }
         if (ruOptPlugins.babel) {

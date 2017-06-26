@@ -6,7 +6,7 @@ var gulp = require('gulp'),
 
     PluginLoader = require('./plugin-loader.js'),
     plugins = PluginLoader.plugins,
-    
+
     ConsoleProxy = require('./console-proxy.js'),
     DependencyInjector = require('./dependency-injector.js'),
     TaskList = require('./task-list.js'),
@@ -21,7 +21,13 @@ function TaskManager() {
         gulp: gulp
     });
 
-    TaskList.forEach((task) => {
+
+    // 其它任务
+    var extraTask = [
+        { name: 'do_upload', load: () => require('./tasks/do-upload'), desc: '上传文件' },
+        { name: 'clear_tmp_dir', load: () => require('./tasks/clear-tmp-dir'), desc: '清理临时目录' }
+    ];
+    TaskList.concat(extraTask).forEach((task) => {
         this._define(task.name, task.load(), task.desc);
     });
 
