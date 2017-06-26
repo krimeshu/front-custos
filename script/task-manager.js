@@ -24,7 +24,7 @@ function TaskManager() {
 
     // 其它任务
     var extraTask = [
-        { name: 'do_upload', load: () => require('./tasks/do-upload'), desc: '上传文件' },
+        { name: 'do_upload', load: () => require('./tasks/do-upload'), desc: '上传文件到服务器' },
         { name: 'clear_tmp_dir', load: () => require('./tasks/clear-tmp-dir'), desc: '清理临时目录' }
     ];
     TaskList.concat(extraTask).forEach((task) => {
