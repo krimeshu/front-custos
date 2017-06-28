@@ -213,60 +213,66 @@ FileUploader.prototype = {
                     //     var cookie = Request.cookie(cookieStr);
                     //     jar.setCookie(cookie, uploadPage);
                     // }
-
-                    var request = Request({
-                        url: uploadPage,
-                        // jar: jar,
-                        method: 'POST',
-                        timeout: 10000,
-                        headers: {
-                            'Cache-Control': 'max-age=0',
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
-                            'Cookie': cookieStr,
-                            'Connection': 'keep-alive'
-                        }
-                    }, function (err, msg, response) {
-                        injector.registerMap({
-                            filePath: filePath,
-                            fileStream: fileStream,
-                            response: response
+                    try {
+                        var request = Request({
+                            url: uploadPage,
+                            // jar: jar,
+                            method: 'POST',
+                            timeout: 10000,
+                            headers: {
+                                'Cache-Control': 'max-age=0',
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+                                'Cookie': cookieStr,
+                                'Connection': 'keep-alive'
+                            }
+                        }, function (err, msg, response) {
+                            injector.registerMap({
+                                filePath: filePath,
+                                fileStream: fileStream,
+                                response: response
+                            });
+                            var judgeResult = false;
+                            try {
+                                judgeResult = (!uploadJudge || injector.invoke(uploadJudge));
+                            } catch (e) {
+                                err = new Error('上传结果判断脚本执行异常');
+                                err.detailError = e;
+                            }
+                            if (Array.isArray(judgeResult)) {
+                                let arr = judgeResult;
+                                judgeResult = arr[0];
+                                err = arr[1];
+                            }
+                            try {
+                                response = JSON.parse(response);
+                            } catch (e) {
+                            }
+                            if (!err && judgeResult) {
+                                _onSucceed(response, done);
+                            } else {
+                                _onFailed(err, response, done);
+                            }
+                            try {
+                                onProgress && injector.invoke(onProgress);
+                            } catch (e) {
+                                var ex = new Error('上传进度脚本执行异常');
+                                ex.detailError = e;
+                                onError && onError(ex);
+                            }
                         });
-                        var judgeResult = false;
-                        try {
-                            judgeResult = (!uploadJudge || injector.invoke(uploadJudge));
-                        } catch (e) {
-                            err = new Error('上传结果判断脚本执行异常');
-                            err.detailError = e;
+                        var form = request.form();
+                        for (key in formMap) {
+                            if (formMap.hasOwnProperty(key)) {
+                                value = formMap[key];
+                                form.append(key, value);
+                            }
                         }
-                        if (Array.isArray(judgeResult)) {
-                            let arr = judgeResult;
-                            judgeResult = arr[0];
-                            err = arr[1];
-                        }
-                        try {
-                            response = JSON.parse(response);
-                        } catch (e) {
-                        }
-                        if (!err && judgeResult) {
-                            _onSucceed(response, done);
-                        } else {
-                            _onFailed(err, response, done);
-                        }
-                        try {
-                            onProgress && injector.invoke(onProgress);
-                        } catch (e) {
-                            var ex = new Error('上传进度脚本执行异常');
-                            ex.detailError = e;
-                            onError && onError(ex);
-                        }
-                    });
-                    var form = request.form();
-                    for (key in formMap) {
-                        if (formMap.hasOwnProperty(key)) {
-                            value = formMap[key];
-                            form.append(key, value);
-                        }
+                    } catch (e) {
+                        var ex = new Error('上传异常');
+                        ex.detailError = e;
+                        onError && onError(ex);
                     }
+
                     try {
                         onProgress && injector.invoke(onProgress);
                     } catch (e) {
@@ -275,16 +281,28 @@ FileUploader.prototype = {
                         onError && onError(ex);
                     }
                 }, _onSucceed = function (response, done) {
-                    self._updateFileHash(filePath);
-                    formPreview.file = _path.relative(distDir, filePath);
-                    response !== undefined && (formPreview.response = response);
-                    results.succeed.push(formPreview);
+                    try {
+                        self._updateFileHash(filePath);
+                        formPreview.file = _path.relative(distDir, filePath);
+                        response !== undefined && (formPreview.response = response);
+                        results.succeed.push(formPreview);
+                    } catch (e) {
+                        var ex = new Error('上传异常');
+                        ex.detailError = e;
+                        onError && onError(ex);
+                    }
                     _checkNext(done);
                 }, _onFailed = function (err, response, done) {
-                    err !== undefined && (formPreview.error = err);
-                    formPreview.file = _path.relative(distDir, filePath);
-                    response !== undefined && (formPreview.response = response);
-                    results.failed.push(formPreview);
+                    try {
+                        err !== undefined && (formPreview.error = err);
+                        formPreview.file = _path.relative(distDir, filePath);
+                        response !== undefined && (formPreview.response = response);
+                        results.failed.push(formPreview);
+                    } catch (e) {
+                        var ex = new Error('上传异常');
+                        ex.detailError = e;
+                        onError && onError(ex);
+                    }
                     _checkNext(done);
                 }, _checkNext = function (done) {
                     fileStream.close();
