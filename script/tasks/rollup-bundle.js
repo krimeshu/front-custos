@@ -28,6 +28,8 @@ PluginLoader.add({ 'postcssModules': () => require('postcss-modules') });
 // - 内容中存在某行 'rollup entry'; 标记的脚本将被识别为入口进行打包
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
+        var smOpt = params.smOpt || {};
+
         var workDir = params.workDir,
             pattern = _path.resolve(workDir, '**/*@(.js|.jsx|.vue|.ts|.es6|.vue)'),
             ruOpt = params.ruOpt || {};
@@ -112,7 +114,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 { plugins: plugin },
                 { format: format }
             ))
-            .pipe(plugins.sourcemaps.write(''))
+            .pipe(plugins.sourcemaps.write('', { sourceMappingURL: smOpt.mappingUrl }))
             .pipe(gulp.dest(workDir))
             .on('end', _finish);
 

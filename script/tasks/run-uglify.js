@@ -15,6 +15,8 @@ PluginLoader.add({ uglify: () => require('gulp-uglify') });
 // 压缩&混淆 JS 代码
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
+        var smOpt = params.smOpt || {};
+
         var workDir = params.workDir,
             entry = params.bundleEntry;
 
@@ -30,7 +32,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
             .pipe(plugins.sourcemaps.init())
             .pipe(plugins.uglify())
-            .pipe(plugins.sourcemaps.write(''))
+            .pipe(plugins.sourcemaps.write('', { sourceMappingURL: smOpt.mappingUrl }))
             .pipe(gulp.dest(workDir))
             .on('end', function () {
                 logId && console.useId && console.useId(logId);

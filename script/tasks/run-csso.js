@@ -16,6 +16,8 @@ PluginLoader.add({ 'csso': () => require('gulp-csso') });
 // - 消除 css 文件中的缩进、换行符等字符，减小文件体积
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
+        var smOpt = params.smOpt || {};
+
         var workDir = params.workDir;
 
         var timer = new Timer();
@@ -30,7 +32,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 sourceMap: false,
                 debug: false
             }))
-            .pipe(plugins.sourcemaps.write(''))
+            .pipe(plugins.sourcemaps.write('', { sourceMappingURL: smOpt.mappingUrl }))
             .pipe(gulp.dest(workDir))
             .on('end', function () {
                 logId && console.useId && console.useId(logId);

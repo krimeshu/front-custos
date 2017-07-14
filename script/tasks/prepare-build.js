@@ -49,7 +49,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                         });
                         preprocessing && injector.invoke(preprocessing);
                     } catch (e) {
-                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理将本执行异常：', e);
+                        console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的预处理脚本执行异常：', e);
                     }
                     logId && console.useId && console.useId(logId);
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');

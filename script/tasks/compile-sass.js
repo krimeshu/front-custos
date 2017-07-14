@@ -16,6 +16,8 @@ PluginLoader.add({ 'sass': () => require('gulp-sass') });
 // - 通过 gulp-sass (基于 node-sass) 编译 scss 文件
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
+        var smOpt = params.smOpt || {};
+
         var workDir = params.workDir,
             pattern = _path.resolve(workDir, '**/*@(.scss)');
 
@@ -30,7 +32,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 // errorHandler(err);
                 this.emit('end');
             }))
-            .pipe(plugins.sourcemaps.write(''))
+            .pipe(plugins.sourcemaps.write('', { sourceMappingURL: smOpt.mappingUrl }))
             .pipe(gulp.dest(workDir))
             .once('end', function () {
                 logId && console.useId && console.useId(logId);

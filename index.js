@@ -105,6 +105,14 @@ var FrontCustos = {
         });
         replacer.doReplace(params);
 
+
+        try {
+            var smOpt = params.smOpt || (params.smOpt = {});
+            smOpt.mappingUrl = Utils.tryParseFunction(smOpt.mappingUrl);
+        } catch (e) {
+            console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的 sourceMappingUrl 脚本执行异常：', e);
+        }
+
         var timer = new Timer();
         console.info(Utils.formatTime('[HH:mm:ss.fff]'), '项目 ' + projName + ' 任务开始……');
         this.runTasks(params, function () {

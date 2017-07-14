@@ -58,7 +58,10 @@
     "innerDistDir": "./dist",
     "preprocessing": "function preprocessing(console, workDir) {\n    console.log('当前工作目录：', workDir);\n    // console.log('其它可用参数：', this.queryAvailableArguments().join(', '));\n    // Todo: do something before build.\n}",
     "postprocessing": "function postprocessing(console, workDir) {\n    console.log('当前工作目录：', workDir);\n    // console.log('其它可用参数：', this.queryAvailableArguments().join(', '));\n    // Todo: do something after build.\n}",
-    "keepOldCopy": false
+    "keepOldCopy": false,
+    "smOpt": {
+      "mappingUrl": "// function mappingUrl(file) {\n//     return 'http://asset-host.example.com/' + file.relative + '.map';\n// }"
+    }
   },
   "watchToRebuilding": false
 }
