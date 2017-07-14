@@ -10,7 +10,7 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-PluginLoader.add({'FileLinker': ()=> require('../plugins/file-linker.js')});
+PluginLoader.add({ 'FileLinker': () => require('../plugins/file-linker.js') });
 
 // 分发链接：
 // - 根据文件类型分发文件到不同的目录
@@ -35,7 +35,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
             // php代码处理异常时，请关闭 cheerio 解析
             htmlEnhanced: htmlEnhanced
         }, errorHandler);
-        
+
         var fileAllotMap = {},                               // 用于记录文件分发前后的路径关系
             usedFiles = linker.analyseDepRelation(workDir); //记录分发前的文件依赖表
         // 1. 将构建目录中的文件进行分发和重链接，生成到分发目录中
@@ -76,7 +76,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
 
                     afterClean();
                 };
-                plugins.del(recycledFiles, {force: true}).then(afterClean).catch(cleanFailed);
+                plugins.del(recycledFiles, { force: true }).then(afterClean).catch(cleanFailed);
             });
     };
 };

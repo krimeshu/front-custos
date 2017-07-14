@@ -39,11 +39,12 @@ module.exports = {
                     ]), {
                         fileCache: new plugins.cache.Cache({ cacheDirName: cacheDirName })
                     }
-                ).on('error', function () {
+                ).on('error', function (err) {
+                    console.error(err);
                     this.emit('end');
                 }))
                 .pipe(gulp.dest(workDir))
-                .on('end', function () {
+                .once('end', function () {
                     logId && console.useId && console.useId(logId);
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
                     done();

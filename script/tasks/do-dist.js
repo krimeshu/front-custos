@@ -56,7 +56,11 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
                 .pipe(linker.excludeUnusedFiles(usedFiles))
                 .pipe(linker.excludeEmptyDir())
                 .pipe(gulp.dest(distDir))
-                .on('end', function () {
+                .on('error', function (err) {
+                    console.error(err);
+                    this.emit('end');
+                })
+                .once('end', function () {
                     // 工作目录转移到发布目录
                     params.workDir = distDir;
 

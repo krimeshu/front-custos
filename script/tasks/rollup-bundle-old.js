@@ -2,7 +2,8 @@
  * Created by krimeshu on 2017/2/16.
  */
 
-var _path = require('path'),
+var _fs = require('fs'),
+    _path = require('path'),
 
     PluginLoader = require('../plugin-loader.js'),
     plugins = PluginLoader.plugins,
@@ -10,12 +11,14 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-PluginLoader.add({ 'rollup': () => require('gulp-better-rollup') });
+PluginLoader.add({ 'rollup': () => require('gulp-rollup') });
 PluginLoader.add({ 'rollupPluginNodeResolve': () => require('rollup-plugin-node-resolve') });
 PluginLoader.add({ 'rollupPluginCommonJS': () => require('rollup-plugin-commonjs') });
 PluginLoader.add({ 'rollupPluginBabel': () => require('rollup-plugin-babel') });
 PluginLoader.add({ 'rollupPluginVue': () => require('rollup-plugin-vue') });
 PluginLoader.add({ 'rollupPluginPostcss': () => require('rollup-plugin-postcss') });
+
+var rollupCaches = {};
 
 // 使用Rollup打包JS:
 // - 内容中存在某行 'rollup entry'; 标记的脚本将被识别为入口进行打包
@@ -94,19 +97,50 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             }));
         }
 
-        gulp.src(entry, { base: workDir })
+        // console.log('Cache size:', JSON.stringify(rollupCaches).length);
+        var cachePath = _path.join(workDir, '.rollup_caches');
+        try {
+            // 尝试读取缓存
+            if (_fs.existsSync(cachePath)) {
+                var cacheStr = _fs.readFileSync(cachePath).toString();
+                rollupCaches = JSON.parse(cacheStr);
+                console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'rollup 缓存读取成功。');
+            }
+        } catch (err) {
+            console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'rollup 缓存读取失败。');
+            console.info({ err });
+        }
+
+        gulp.src(pattern, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
             .pipe(plugins.sourcemaps.init())
             .pipe(plugins.rollup(
-                // { plugins: plugin, onwarn: console.warn.bind(console) },
-                { plugins: plugin },
-                { format: format }
+                {
+                    entry: entry,
+                    plugins: plugin,
+                    format: format,
+                    separateCaches: rollupCaches
+                }
+                // { plugins: plugin },
+                // { format: format }
             ))
+            .on('bundle', function (bundle, name) {
+                rollupCaches[name] = bundle;
+            })
             .pipe(plugins.sourcemaps.write(''))
             .pipe(gulp.dest(workDir))
             .on('end', _finish);
 
         function _finish() {
+            try {
+                // 尝试保存缓存
+                _fs.writeFileSync(cachePath, JSON.stringify(rollupCaches));
+                rollupCaches = {};
+                console.log(Utils.formatTime('[HH:mm:ss.fff]'), 'rollup 缓存保存成功。');
+            } catch (err) {
+                console.error(Utils.formatTime('[HH:mm:ss.fff]'), 'rollup 缓存保存失败。');
+                console.info({ err });
+            }
             logId && console.useId && console.useId(logId);
             console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
             done();
