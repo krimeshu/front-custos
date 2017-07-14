@@ -12,6 +12,8 @@ var gulp = require('gulp'),
     TaskList = require('./task-list.js'),
     TaskErrorHandler = require('./task-error-handler.js');
 
+PluginLoader.add({ 'runSequence': () => require('run-sequence') });
+
 function TaskManager() {
     this._map = {};
     this._data = [];

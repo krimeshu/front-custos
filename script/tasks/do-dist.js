@@ -11,6 +11,8 @@ var _path = require('path'),
     Timer = require('../timer.js'),
     DependencyInjector = require('../dependency-injector.js');
 
+PluginLoader.add({ 'del': () => require('del') });
+
 PluginLoader.add({ 'FileLinker': () => require('../plugins/file-linker.js') });
 
 // 发布：

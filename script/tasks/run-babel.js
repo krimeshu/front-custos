@@ -10,6 +10,12 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
+PluginLoader.add({ 'babel': () => require('gulp-babel') });
+
+PluginLoader.add({ 'babelPresetEs2015': () => require('babel-preset-es2015') });
+PluginLoader.add({ 'babelPresetReact': () => require('babel-preset-react') });
+PluginLoader.add({ 'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers') });
+
 // 使用 babel 处理脚本文件:
 // - 通过 gulp-babel 转换 es6 的 javscript
 module.exports = function (console, gulp, params, errorHandler, taskName) {
@@ -25,14 +31,17 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
             .pipe(plugins.sourcemaps.init())
             .pipe(plugins.babel({
-                presets: [plugins.babelPresetEs2015, plugins.babelPresetReact]
+                presets: [
+                    plugins.babelPresetEs2015,
+                    plugins.babelPresetReact
+                ]
             }).on('error', function () {
                 // errorHandler(err);
                 this.emit('end');
             }))
             .pipe(plugins.sourcemaps.write(''))
             .pipe(gulp.dest(workDir))
-            .on('end', function () {
+            .once('end', function () {
                 logId && console.useId && console.useId(logId);
                 console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
                 done();

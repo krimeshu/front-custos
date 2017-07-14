@@ -10,6 +10,8 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
+PluginLoader.add({ 'del': () => require('del') });
+
 PluginLoader.add({ 'FileLinker': () => require('../plugins/file-linker.js') });
 
 // 分发链接：

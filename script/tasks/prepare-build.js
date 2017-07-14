@@ -10,6 +10,8 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js'),
     DependencyInjector = require('../dependency-injector.js');
+    
+PluginLoader.add({ 'del': () => require('del') });
 
 // 准备构建环境：
 // - 清理构建目录

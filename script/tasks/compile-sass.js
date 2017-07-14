@@ -10,6 +10,8 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
+PluginLoader.add({ 'sass': () => require('gulp-sass') });
+
 // 编译SASS:
 // - 通过 gulp-sass (基于 node-sass) 编译 scss 文件
 module.exports = function (console, gulp, params, errorHandler, taskName) {
@@ -30,7 +32,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             }))
             .pipe(plugins.sourcemaps.write(''))
             .pipe(gulp.dest(workDir))
-            .on('end', function () {
+            .once('end', function () {
                 logId && console.useId && console.useId(logId);
                 console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
                 done();

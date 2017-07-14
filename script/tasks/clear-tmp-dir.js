@@ -10,6 +10,8 @@ var _path = require('path'),
 
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
+    
+PluginLoader.add({ 'del': () => require('del') });
 
 // 清理临时目录：
 // - 将临时文件目录的内容删除

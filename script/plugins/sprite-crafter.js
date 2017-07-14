@@ -14,7 +14,7 @@ var ruleJson = {
         check: function (file) {
             return _path.extname(file) === '.css';
         },
-        reg: /background(?:\-image)?:[^;}]*?url\(['"]?(.+?)#sc(=(.*?))?['"]?\)[^;}]*[;}]/gi,
+        reg: /background(?:\-image)?:[^;}]*?url\(['"]?(.+?)#sc(=(.*?))?['"]?\)[^;}]*?/gi,
         m: [0, 1, 3]
     }
 };

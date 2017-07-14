@@ -18,6 +18,12 @@ PluginLoader.add({ 'rollupPluginBabel': () => require('rollup-plugin-babel') });
 PluginLoader.add({ 'rollupPluginVue': () => require('rollup-plugin-vue') });
 PluginLoader.add({ 'rollupPluginPostcss': () => require('rollup-plugin-postcss') });
 
+PluginLoader.add({ 'babelPresetEs2015': () => require('babel-preset-es2015') });
+PluginLoader.add({ 'babelPresetReact': () => require('babel-preset-react') });
+PluginLoader.add({ 'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers') });
+
+PluginLoader.add({ 'postcssModules': () => require('postcss-modules') });
+
 var rollupCaches = {};
 
 // 使用Rollup打包JS:

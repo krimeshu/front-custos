@@ -1,6 +1,6 @@
 {
   "name": "front-custos",
-  "version": "1.14.1",
+  "version": "1.14.3",
   "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "babel-preset-react": "^6.24.1",
     "browserify": "^13.0.1",
     "cheerio": "^0.22.0",
+    "cssnano": "^3.10.0",
     "del": "^2.2.0",
     "glob": "^7.0.0",
     "gulp": "^3.9.1",
@@ -28,6 +29,7 @@
     "gulp-postcss": "^7.0.0",
     "gulp-sass": "^2.3.1",
     "gulp-sourcemaps": "^2.6.0",
+    "gulp-uglify": "^3.0.0",
     "imagemin-pngquant": "^5.0.1",
     "node-sass": "^3.7.0",
     "postcss": "^5.0.21",
@@ -37,6 +39,7 @@
     "rollup-plugin-commonjs": "^7.0.0",
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-postcss": "^0.5.3",
+    "rollup-plugin-uglify": "^2.0.1",
     "rollup-plugin-vue": "^2.4.0",
     "run-sequence": "^1.2.1",
     "spritesmith": "^3.1.0",

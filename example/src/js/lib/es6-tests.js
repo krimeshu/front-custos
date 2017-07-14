@@ -135,3 +135,4 @@ function test() {
 }
 
 exports.default = testRunner;
+//# sourceMappingURL=es6-tests.js.map

@@ -13,9 +13,16 @@ var _path = require('path'),
 PluginLoader.add({ 'rollup': () => require('gulp-better-rollup') });
 PluginLoader.add({ 'rollupPluginNodeResolve': () => require('rollup-plugin-node-resolve') });
 PluginLoader.add({ 'rollupPluginCommonJS': () => require('rollup-plugin-commonjs') });
-PluginLoader.add({ 'rollupPluginBabel': () => require('rollup-plugin-babel') });
 PluginLoader.add({ 'rollupPluginVue': () => require('rollup-plugin-vue') });
 PluginLoader.add({ 'rollupPluginPostcss': () => require('rollup-plugin-postcss') });
+PluginLoader.add({ 'rollupPluginBabel': () => require('rollup-plugin-babel') });
+PluginLoader.add({ 'rollupPluginUglify': () => require('rollup-plugin-uglify') });
+
+PluginLoader.add({ 'babelPresetEs2015': () => require('babel-preset-es2015') });
+PluginLoader.add({ 'babelPresetReact': () => require('babel-preset-react') });
+PluginLoader.add({ 'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers') });
+
+PluginLoader.add({ 'postcssModules': () => require('postcss-modules') });
 
 // 使用Rollup打包JS:
 // - 内容中存在某行 'rollup entry'; 标记的脚本将被识别为入口进行打包
@@ -92,6 +99,9 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 ],
                 plugins: [plugins.babelPluginExternalHelpers]
             }));
+        }
+        if (ruOptPlugins.uglify) {
+            plugin.push(plugins.rollupPluginUglify());
         }
 
         gulp.src(entry, { base: workDir })

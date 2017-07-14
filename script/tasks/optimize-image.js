@@ -11,6 +11,11 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
+PluginLoader.add({ 'del': () => require('del') });
+PluginLoader.add({ 'imagemin': () => require('gulp-imagemin') });
+PluginLoader.add({ 'pngquant': () => require('imagemin-pngquant') });
+PluginLoader.add({ 'cache': () => require('gulp-cache') });
+
 var cacheDirName = 'imagemin-cache';
 
 // 优化图片：
