@@ -18,7 +18,9 @@ PluginLoader.add({ 'cssnano': () => require('cssnano') });
 // - 使用 Prefix Crafter（基于 autoprefixer）处理CSS，自动添加需要的浏览器前缀
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
-        var smOpt = params.smOpt || {};
+        var smOpt = params.smOpt || {},
+            isSourcemapEnabled = !!smOpt.enable,
+            sourceMappingURL = smOpt.mappingUrl;
 
         var workDir = params.workDir,
             pattern = _path.resolve(workDir, '**/*@(.css)'),
@@ -37,9 +39,9 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(pattern)
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.sourcemaps.init())
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init()))
             .pipe(plugins.postcss(pluginList))
-            .pipe(plugins.sourcemaps.write('', { sourceMappingURL: smOpt.mappingUrl }))
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
             .pipe(gulp.dest(workDir))
             .on('end', function () {
                 logId && console.useId && console.useId(logId);

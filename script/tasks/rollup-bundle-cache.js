@@ -30,7 +30,9 @@ var rollupCaches = {};
 // - 内容中存在某行 'rollup entry'; 标记的脚本将被识别为入口进行打包
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
-        var smOpt = params.smOpt || {};
+        var smOpt = params.smOpt || {},
+            isSourcemapEnabled = !!smOpt.enable,
+            sourceMappingURL = smOpt.mappingUrl;
 
         var workDir = params.workDir,
             pattern = _path.resolve(workDir, '**/*@(.js|.jsx|.vue|.ts|.es6|.vue)'),
@@ -121,7 +123,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
 
         gulp.src(pattern, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.sourcemaps.init())
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init()))
             .pipe(plugins.rollup(
                 {
                     entry: entry,
@@ -135,7 +137,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             .on('bundle', function (bundle, name) {
                 rollupCaches[name] = bundle;
             })
-            .pipe(plugins.sourcemaps.write('', { sourceMappingURL: smOpt.mappingUrl }))
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
             .pipe(gulp.dest(workDir))
             .on('end', _finish);
 

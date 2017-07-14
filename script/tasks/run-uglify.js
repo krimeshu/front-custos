@@ -15,7 +15,9 @@ PluginLoader.add({ uglify: () => require('gulp-uglify') });
 // 压缩&混淆 JS 代码
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
-        var smOpt = params.smOpt || {};
+        var smOpt = params.smOpt || {},
+            isSourcemapEnabled = !!smOpt.enable,
+            sourceMappingURL = smOpt.mappingUrl;
 
         var workDir = params.workDir,
             entry = params.bundleEntry;
@@ -30,9 +32,9 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(entry, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.sourcemaps.init())
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init()))
             .pipe(plugins.uglify())
-            .pipe(plugins.sourcemaps.write('', { sourceMappingURL: smOpt.mappingUrl }))
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
             .pipe(gulp.dest(workDir))
             .on('end', function () {
                 logId && console.useId && console.useId(logId);

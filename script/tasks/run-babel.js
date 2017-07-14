@@ -20,7 +20,9 @@ PluginLoader.add({ 'babelPluginExternalHelpers': () => require('babel-plugin-ext
 // - 通过 gulp-babel 转换 es6 的 javscript
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
-        var smOpt = params.smOpt || {};
+        var smOpt = params.smOpt || {},
+            isSourcemapEnabled = !!smOpt.enable,
+            sourceMappingURL = smOpt.mappingUrl;
 
         var workDir = params.workDir,
             pattern = _path.resolve(workDir, '**/*@(.es6)');
@@ -31,7 +33,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(pattern)
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.sourcemaps.init())
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init()))
             .pipe(plugins.babel({
                 presets: [
                     plugins.babelPresetEs2015,
@@ -41,7 +43,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 // errorHandler(err);
                 this.emit('end');
             }))
-            .pipe(plugins.sourcemaps.write('', { sourceMappingURL: smOpt.mappingUrl }))
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
             .pipe(gulp.dest(workDir))
             .once('end', function () {
                 logId && console.useId && console.useId(logId);
