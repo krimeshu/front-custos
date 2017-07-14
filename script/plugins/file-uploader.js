@@ -81,15 +81,25 @@ FileUploader.prototype = {
         var self = this,
             history = self._history || {},
             data = history.data,
-            currentHash = Utils.md5(filePath, true),
+            currentHash = null,
             historyHash = data[filePath];
+        try {
+            currentHash = Utils.md5(filePath, true);
+        } catch (e) {
+            console.log('FileUploader - 读取 MD5 校验出现异常。\n', e);
+        }
         return currentHash === historyHash;
     },
     _updateFileHash: function (filePath) {
         var self = this,
             history = self._history || {},
             data = history.data,
+            currentHash = null;
+        try {
             currentHash = Utils.md5(filePath, true);
+        } catch (e) {
+            console.log('FileUploader - 更新 MD5 校验出现异常。\n', e);
+        }
         data[filePath] = currentHash;
         self._saveHistory();
     },
