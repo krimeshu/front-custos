@@ -58,7 +58,7 @@ exports.fillObj = function (refer, target) {
 };
 
 exports.clearObj = function (o) {
-    if (typeof(o) !== 'object') {
+    if (typeof (o) !== 'object') {
         return;
     }
     for (var p in o) {
@@ -166,7 +166,7 @@ exports.getFilesOfDir = function (dir, pat, rec) {
         var files = [],
             children = _fs.readdirSync(dir);
 
-        if (typeof(pat) === 'string') {
+        if (typeof (pat) === 'string') {
             pat = pat.split('|');
         }
 
@@ -177,9 +177,9 @@ exports.getFilesOfDir = function (dir, pat, rec) {
             if (stat.isFile()) {
                 var ext = _path.extname(fp),
                     basename = _path.basename(fp);
-                if (pat[0] === '*' ||                               // Any
-                    (pat.indexOf && pat.indexOf(ext) >= 0) ||       // Array
-                    (pat.test && pat.test(basename))) {             // RegExp
+                if (pat[0] === '*' || // Any
+                    (pat.indexOf && pat.indexOf(ext) >= 0) || // Array
+                    (pat.test && pat.test(basename))) { // RegExp
                     files.push(fp);
                 }
             } else if (stat.isDirectory() && child.charAt(0) !== '_' && rec) {
@@ -221,23 +221,24 @@ exports.cleanEmptyDir = function (dir) {
 // 文件夹相关 ED
 
 exports.replaceBackSlash = function (filePath) {
-    return typeof(filePath) === 'string' ? filePath.replace(/\\/g, '/') : '';
+    return typeof (filePath) === 'string' ? filePath.replace(/\\/g, '/') : '';
 };
 
 // 格式验证相关 ST
 exports.getFileType = function (file) {
     var extName = _path.extname(file).toLowerCase(),
         fileTypes = exports.getFileType._fileTypes || (
-                exports.getFileType._fileTypes = {
-                    page: ['.php', '.html', '.shtml'],
-                    style: ['.css', '.sass', '.scss'],
-                    script: ['.js', '.jsx', '.es6', '.vue', '.ts', '.es6'],
-                    sourcemap: ['.map'],
-                    image: ['.jpg', '.jpeg', '.png', '.gif'],
-                    font: ['.eot', '.svg', '.ttf', '.woff', '.woff2'],
-                    audio: ['.mp3', '.wav', '.ogg']
-                }
-            );
+            exports.getFileType._fileTypes = {
+                page: ['.php', '.html', '.shtml'],
+                style: ['.css', '.sass', '.scss'],
+                script: ['.js', '.jsx', '.es6', '.vue', '.ts', '.es6'],
+                sourcemap: ['.map'],
+                image: ['.jpg', '.jpeg', '.png', '.gif'],
+                font: ['.eot', '.svg', '.ttf', '.woff', '.woff2'],
+                audio: ['.mp3', '.wav', '.ogg'],
+                dataText: ['.json', '.xml']
+            }
+        );
     for (var type in fileTypes) {
         if (!fileTypes.hasOwnProperty(type)) {
             continue;
@@ -250,7 +251,7 @@ exports.getFileType = function (file) {
 };
 exports.isText = function (file) {
     var type = exports.getFileType(file);
-    return type === 'page' || type === 'style' || type === 'script' || type === 'sourcemap';
+    return type === 'page' || type === 'style' || type === 'script' || type === 'sourcemap' || type === 'dataText';
 };
 exports.isPage = function (file) {
     var type = exports.getFileType(file);
@@ -267,6 +268,10 @@ exports.isScript = function (file) {
 exports.isSourcemap = function (file) {
     var type = exports.getFileType(file);
     return type === 'sourcemap';
+};
+exports.isDataText = function (file) {
+    var type = exports.getFileType(file);
+    return type === 'dataText';
 };
 exports.isImage = function (file) {
     var type = exports.getFileType(file);
@@ -294,7 +299,7 @@ exports.countLineNumber = function (content, match) {
 };
 
 exports.tryParseFunction = function (func) {
-    var type = typeof(func);
+    var type = typeof (func);
     switch (type) {
         case 'function':
             return func;

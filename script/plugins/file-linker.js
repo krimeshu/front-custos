@@ -37,9 +37,9 @@ FileLinker.prototype = {
     _getRegExp: function (type) {
         var self = this,
             reg = type === 'css' ? self._regExpCss :
-                type === 'html' ? self._regExpHtml :
-                    type === 'map' ? self._regExpMap :
-                        self._regExp;
+            type === 'html' ? self._regExpHtml :
+            type === 'map' ? self._regExpMap :
+            self._regExp;
         return new RegExp(reg);
     },
     // 分析项目的文件引用关系
@@ -167,7 +167,7 @@ FileLinker.prototype = {
             }
             usedFiles.push(_file);
             if (cb) {
-                var _newFile = cb(_rawFile, _file),       // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
+                var _newFile = cb(_rawFile, _file), // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
                     //_newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')),
                     _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g');
@@ -227,8 +227,8 @@ FileLinker.prototype = {
             }
             usedFiles.push(_file);
             if (cb) {
-                var _newFile = cb(_rawFile, _file),       // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
-                    _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')),  // 注意，与上面不同
+                var _newFile = cb(_rawFile, _file), // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
+                    _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')), // 注意，与上面不同
                     _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g');
                 //console.log(_rawStr, '=>', _newStr);
@@ -316,8 +316,8 @@ FileLinker.prototype = {
             }
             usedFiles.push(_file);
             if (cb) {
-                var _newFile = cb(_rawFile, _file),       // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
-                    _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')),  // 注意，与上面不同
+                var _newFile = cb(_rawFile, _file), // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
+                    _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')), // 注意，与上面不同
                     _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g');
                 //console.log(_rawStr, '=>', _newStr);
@@ -369,8 +369,8 @@ FileLinker.prototype = {
             }
             usedFiles.push(_file);
             if (cb) {
-                var _newFile = cb(_rawFile, _file),       // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
-                    _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')),  // 注意，与上面不同
+                var _newFile = cb(_rawFile, _file), // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
+                    _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')), // 注意，与上面不同
                     _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g');
                 newContent = newContent.replace(_reg, _newStr.replace(/\u0024([$`&'])/g, '$$$$$1'));
@@ -402,8 +402,8 @@ FileLinker.prototype = {
         $('link[href], img[src], script[src], audio[src], video[src], source[src]').each(function () {
             var $this = $(this),
                 propName = $this.is('[src]') ? 'src' :
-                    $this.is('[href]') ? 'href' :
-                        null;
+                $this.is('[href]') ? 'href' :
+                null;
             if (!propName) {
                 return;
             }
@@ -446,7 +446,7 @@ FileLinker.prototype = {
             }
             usedFiles.push(_file);
             if (cb) {
-                var _newFile = cb(_rawFile, _file);       // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
+                var _newFile = cb(_rawFile, _file); // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
                 $this.attr(propName, _newFile);
             }
         });
@@ -587,6 +587,10 @@ FileLinker.prototype = {
                     _newFile = staticUrlHead + _sp + _fileRela;
                 } else {
                     _newFile = _path.relative(_path.dirname(newFilePath), _newFilePath);
+                    // 补上相对路径的 ./
+                    if (!/^(\.|\/|[a-z]:)/i.test(_newFile)) {
+                        _newFile = './' + _newFile;
+                    }
                 }
 
                 _newFile = Utils.replaceBackSlash(_newFile);

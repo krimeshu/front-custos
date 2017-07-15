@@ -46,11 +46,9 @@
       "prefix_crafter",
       "sprite_crafter",
       "optimize_image",
-      "run_csso",
       "join_include",
       "rollup_bundle",
       "run_browserify",
-      "run_uglify",
       "allot_link",
       "do_dist"
     ],
