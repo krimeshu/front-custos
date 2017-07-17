@@ -15,7 +15,7 @@ exports.configDir = function (_fileName) {
 };
 
 exports.deepCopy = function (origin, _copy) {
-    var self = arguments.callee,
+    var self = exports.deepCopy,
         type = Object.prototype.toString.call(origin),
         copy = origin;
     switch (type) {
@@ -40,7 +40,7 @@ exports.deepCopy = function (origin, _copy) {
 };
 
 exports.fillObj = function (refer, target) {
-    var self = arguments.callee,
+    var self = exports.deepCopy,
         refType = Object.prototype.toString.call(refer),
         tarType = Object.prototype.toString.call(target);
     if (refType !== '[object Object]' ||
@@ -50,7 +50,8 @@ exports.fillObj = function (refer, target) {
     for (var k in refer) {
         if (refer.hasOwnProperty(k)) {
             var rk = refer[k],
-                tk = target[k] || (target[k] = exports.deepCopy(rk));
+                tk = target[k] === undefined &&
+                    (target[k] = exports.deepCopy(rk));
             self(rk, tk);
         }
     }
