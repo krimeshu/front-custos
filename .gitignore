@@ -4,4 +4,5 @@ dist
 bundle.bat
 7z.dll
 7z.exe
-test2.js
+*.map
+es6-test.js
