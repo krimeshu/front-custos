@@ -22,6 +22,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
 
             uploadAll = upOpt.uploadAll,
             uploadPage = upOpt.page,
+            uploadFilter = upOpt.filter,
             uploadForm = upOpt.form,
             uploadJudge = upOpt.judge,
 
@@ -37,6 +38,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
 
             uploadAll: uploadAll,
             uploadPage: uploadPage,
+            uploadFilter: uploadFilter,
             uploadForm: uploadForm,
             uploadJudge: uploadJudge,
             concurrentLimit: concurrentLimit

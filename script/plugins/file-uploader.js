@@ -122,12 +122,14 @@ FileUploader.prototype = {
         var self = this,
             forInjector = self.forInjector,
             uploadAll = self.uploadAll,
+            uploadFilter = self.uploadFilter,
             uploadForm = self.uploadForm,
             uploadJudge = self.uploadJudge,
             uploadQueue = self.uploadQueue,
 
             onError = self.onError;
 
+        uploadFilter = uploadFilter ? utils.tryParseFunction(uploadFilter) : null;
         uploadForm = Utils.tryParseFunction(uploadForm);
         uploadJudge = Utils.tryParseFunction(uploadJudge);
 
@@ -135,10 +137,11 @@ FileUploader.prototype = {
             succeed: [],
             failed: [],
             unchanged: [],
-            totalCount: uploadQueue.length
+            totalCount: 0
         };
 
         if (!uploadAll) {
+            // 排除未变化的文件
             uploadQueue.forEach(function (filePath) {
                 if (self._isFileUnchanged(filePath)) {
                     results.unchanged.push(filePath);
@@ -150,7 +153,13 @@ FileUploader.prototype = {
             });
         }
 
+        if (uploadFilter) {
+            // 过滤文件
+            uploadQueue = uploadQueue.filter(uploadFilter);
+        }
+
         results.queue = uploadQueue;
+        results.totalCount = uploadQueue.length;
 
         // 临时增加 cookie 配置
         var cookieDir = Utils.configDir('./'),

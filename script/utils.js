@@ -308,7 +308,7 @@ exports.tryParseFunction = function (func) {
             func = 'return ' + func;
             break;
         default:
-            func = 'return null;';
+            func = '';
             break;
     }
     return new Function(func)();
