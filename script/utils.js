@@ -305,9 +305,7 @@ exports.tryParseFunction = function (func) {
         case 'function':
             return func;
         case 'string':
-            func = func.replace(/(\/\*[^\u0000]*?\*\/|\/\/[^\u0000]*?[\n$])/g, '')
-                .replace(/^(\s|\r|\n)*/, '');
-            func = 'return ' + func;
+            func = 'return (' + func + ');';
             break;
         default:
             func = '';
