@@ -305,7 +305,7 @@ exports.tryParseFunction = function (func) {
         case 'function':
             return func;
         case 'string':
-            func = 'return (' + func + ');';
+            func = func ? 'return (' + func + '\n);' : '';
             break;
         default:
             func = '';
