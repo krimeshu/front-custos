@@ -13,7 +13,6 @@ var _path = require('path'),
 PluginLoader.add({ 'through': () => require('through2') });
 PluginLoader.add({ 'webpack': () => require('webpack') });
 PluginLoader.add({ 'gulpWebpack': () => require('webpack-stream') });
-PluginLoader.add({ 'named': () => require('vinyl-named') });
 
 PluginLoader.add({ 'autoprefixer': () => require('autoprefixer') });
 
