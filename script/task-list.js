@@ -14,6 +14,7 @@ var TaskList = [
     { name: 'run_csso', load: () => require('./tasks/run-csso'), desc: '使用 csso 压缩样式文件' },
     { name: 'join_include', load: () => require('./tasks/join-include'), desc: '合并包含的文件内容' },
     { name: 'find_bundle_entry', load: () => require('./tasks/find-bundle-entry'), desc: '通过分析 html 文件标记脚本打包的入口' },
+    { name: 'webpack_bundle', load: () => require('./tasks/webpack-bundle'), desc: '使用 webpack 打包脚本' },
     { name: 'rollup_bundle', load: () => require('./tasks/rollup-bundle'), desc: '使用 rollup 打包脚本' },
     { name: 'run_browserify', load: () => require('./tasks/run-browserify'), desc: '使用 browserify 打包脚本' },
     { name: 'run_uglify', load: () => require('./tasks/run-uglify'), desc: '使用 uglify-es 压缩脚本文件' },

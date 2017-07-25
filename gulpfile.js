@@ -24,7 +24,7 @@ gulp.task('electron-rebuild', function (done) {
         .then(function () {
             console.log('Copying node-sass rebuilt to vendor dir...');
             useBuiltNodeSass(path.resolve('./node_modules/node-sass'));
-            useBuiltNodeSass(path.resolve('./node_modules/rollup-plugin-vue/node_modules/node-sass'));
+            // useBuiltNodeSass(path.resolve('./node_modules/rollup-plugin-vue/node_modules/node-sass'));
             console.log('Copy finished.');
         })
         .then(function () {

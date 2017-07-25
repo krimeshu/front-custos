@@ -65,9 +65,10 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 }, babelifyOpts
             ))
             .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init({ loadMaps: true })))
+            .pipe(browserify.excludeMap())
             .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
             .pipe(gulp.dest(workDir))
-            .on('end', function () {
+            .once('end', function () {
                 logId && console.useId && console.useId(logId);
                 console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
                 done();

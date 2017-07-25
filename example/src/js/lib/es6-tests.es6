@@ -80,12 +80,11 @@ var testRunner = new ES6TestRunner({
             }
         };
         asyncTask.run();
+    },
+    test() {
+        document.write('test in es6-tests.es6<br/>');
+        testRunner.runTests();
     }
 });
-
-testRunner.test = function () {
-    document.write('test in es6-tests.es6<br/>');
-    testRunner.runTests();
-};
 
 export default testRunner;

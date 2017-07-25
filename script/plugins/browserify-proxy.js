@@ -14,6 +14,17 @@ var BrowserifyProxy = function (onError) {
 };
 
 BrowserifyProxy.prototype = {
+    excludeMap: function () {
+        return Through2.obj(function (file, enc, cb) {
+            // Dont pipe through any source map files as it will be handled 
+            // by gulp-sourcemaps 
+            var isSourceMap = /\.map$/.test(file.path);
+            if (!isSourceMap) {
+                this.push(file);
+            }
+            cb();
+        });
+    },
     handleFile: function (browserifyOpts, babelifyOpts) {
         var self = this;
         return Through2.obj(function (file, enc, cb) {

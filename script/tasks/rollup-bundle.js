@@ -61,12 +61,6 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             return;
         }
 
-        // var moduleName = entry.map((entryPath) => {
-        //     var extName = _path.extname(entryPath),
-        //         name = _path.basename(entryPath, extName);
-        //     return name.replace(/(\-\w)/g, function (m) { return m[1].toUpperCase(); });
-        // });
-
         var plugin = [],
             ruOptPlugins = ruOpt.plugins || {};
         if (ruOptPlugins.nodeResolve) {
@@ -123,7 +117,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             ))
             .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
             .pipe(gulp.dest(workDir))
-            .on('end', _finish);
+            .once('end', _finish);
 
         function _finish() {
             logId && console.useId && console.useId(logId);
