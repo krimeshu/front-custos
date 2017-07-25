@@ -11,7 +11,7 @@
       "cssnano": true
     },
     "jsOpt": {
-      "bundleEntry": "js/bundle-entry.js\njs/use-components.js"
+      "bundleEntry": "js/bundle-entry.js\njs/use-vue-component.js\njs/use-react-component.js"
     },
     "ruOpt": {
       "plugins": {
@@ -50,7 +50,7 @@
       "optimize_image",
       "run_csso",
       "join_include",
-      "webpack_bundle",
+      "run_browserify",
       "allot_link",
       "do_dist"
     ],
@@ -64,7 +64,10 @@
       "enable": true
     },
     "brOpt": {
-      "babelify": true
+      "babelify": true,
+      "vueify": true,
+      "cssModulesify": true,
+      "cssModules": true
     }
   },
   "watchToRebuilding": false

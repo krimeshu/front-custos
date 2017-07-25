@@ -10,7 +10,13 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-PluginLoader.add({ 'BrowserifyProxy': () => require('../plugins/browserify-proxy.js') });
+PluginLoader.add({
+    'BrowserifyProxy': () => require('../plugins/browserify-proxy.js'),
+    'babelPresetEs2015': () => require('babel-preset-es2015'),
+    'babelPresetReact': () => require('babel-preset-react'),
+    'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime'),
+    'cssModulesify': () => require('css-modulesify')
+});
 
 // 使用Browserify打包JS:
 module.exports = function (console, gulp, params, errorHandler, taskName) {
@@ -48,25 +54,32 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             return;
         }
 
-        var browserify = new plugins.BrowserifyProxy(errorHandler),
-            babelifyOpts = !brOpt.babelify ? null : {
-                presets: [
-                    plugins.babelPresetEs2015,
-                    plugins.babelPresetReact
-                ]
-            };
+        var modulePath = _path.join(__dirname, '../../node_modules');
 
-        gulp.src(entry, { base: workDir })
-            .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(browserify.handleFile(
-                {
-                    debug: isSourcemapEnabled,
-                    extensions: [' ', 'js', 'jsx']
-                }, babelifyOpts
-            ))
-            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init({ loadMaps: true })))
+        var browserify = new plugins.BrowserifyProxy(Utils.deepCopy(brOpt, {
+            workDir: workDir,
+            paths: [
+                '.',
+                Utils.replaceBackSlash(modulePath)
+            ],
+            debug: isSourcemapEnabled,
+            extensions: [' ', 'js', 'jsx', 'vue']
+        }), errorHandler);
+
+        gulp.src(entry, {
+                base: workDir
+            })
+            .pipe(plugins.plumber({
+                'errorHandler': errorHandler
+            }))
+            .pipe(browserify.handleFile())
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init({
+                loadMaps: true
+            })))
             .pipe(browserify.excludeMap())
-            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', {
+                sourceMappingURL
+            })))
             .pipe(gulp.dest(workDir))
             .once('end', function () {
                 logId && console.useId && console.useId(logId);
