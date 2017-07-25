@@ -13,7 +13,11 @@ PluginLoader.add({
     'browserify': () => require('browserify'),
     'babelify': () => require('babelify'),
     'vueify': () => require('vueify'),
-    'cssModulesify': () => require('cssModulesify')
+    'babelPluginCssModulesReact': () => require('babel-plugin-css-modules-react'),
+    // 'babelPluginTransformPostcss': () => require('babel-plugin-transform-postcss'),
+    // 'babelPluginReactCssModules': () => require('babel-plugin-react-css-modules'),
+    // 'babelPluginCssModulesTransform': () => require('babel-plugin-css-modules-transform'),
+    // 'postcssModules': () => require('postcss-modules')
 });
 
 var BrowserifyProxy = function (opts, onError) {
@@ -26,7 +30,18 @@ var BrowserifyProxy = function (opts, onError) {
             plugins.babelPresetReact
         ],
         plugins: [
-            plugins.babelPluginCssModulesTransform
+            plugins.babelPluginCssModulesReact.default,
+            // plugins.babelPluginCssModulesTransform.default
+            // [plugins.babelPluginReactCssModules.default, {
+            //     generateScopedName: function (name, filename, css) {
+            //         var path = require('path');
+            //         var i = css.indexOf('.' + name);
+            //         var line = css.substr(0, i).split(/[\r\n]/).length;
+            //         var file = path.basename(filename, '.css');
+
+            //         return '_' + file + '_' + line + '_' + name;
+            //     }
+            // }]
         ]
     };
     this.vueifyOpts = !opts.vueify ? null : {
