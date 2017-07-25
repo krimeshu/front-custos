@@ -39,7 +39,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(pattern)
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init()))
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init({ loadMaps: true })))
             .pipe(plugins.postcss(pluginList))
             .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
             .pipe(gulp.dest(workDir))

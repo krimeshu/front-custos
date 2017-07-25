@@ -14,6 +14,17 @@ exports.configDir = function (_fileName) {
     return _path.resolve(dirPath, fileName);
 };
 
+exports.upgradeOpts = function (_params) {
+    _params = _params || {};
+    // 旧版 ruOpt 中的 entry 升级为 jsOpt 的 bundleEntry
+    var ruOpt = _params.ruOpt || (_params.ruOpt = {}),
+        jsOpt = _params.jsOpt || (_params.jsOpt = {});
+    if (ruOpt.entry) {
+        jsOpt.bundleEntry = ruOpt.entry;
+    }
+    return _params;
+};
+
 exports.deepCopy = function (origin, _copy) {
     var self = exports.deepCopy,
         type = Object.prototype.toString.call(origin),

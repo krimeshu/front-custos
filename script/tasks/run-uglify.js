@@ -10,7 +10,10 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-PluginLoader.add({ uglify: () => require('gulp-uglify') });
+PluginLoader.add({
+    uglifyES: () => require('uglify-es'),
+    composer: () => require('gulp-uglify/composer')
+});
 
 // 压缩&混淆 JS 代码
 module.exports = function (console, gulp, params, errorHandler, taskName) {
@@ -26,14 +29,24 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             entry = _path.resolve(workDir, '**/*@(.js)');
         }
 
+        var minify = plugins.composer(plugins.uglifyES, console);
+
         var timer = new Timer();
         var logId = console.genUniqueId && console.genUniqueId();
         logId && console.useId && console.useId(logId);
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(entry, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init()))
-            .pipe(plugins.uglify())
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init({ loadMaps: true })))
+            .pipe(plugins.cache(
+                minify({
+                    compress: {
+                        unused: false
+                    }
+                })).on('error', function (err) {
+                    console.error(err);
+                    this.emit('end');
+                }))
             .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
             .pipe(gulp.dest(workDir))
             .on('end', function () {

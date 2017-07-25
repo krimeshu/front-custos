@@ -25,7 +25,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             sourceMappingURL = smOpt.mappingUrl;
 
         var workDir = params.workDir,
-            pattern = _path.resolve(workDir, '**/*@(.es6)');
+            pattern = _path.resolve(workDir, '**/*@(.js|.jsx|.es6)');
 
         var timer = new Timer();
         var logId = console.genUniqueId && console.genUniqueId();
@@ -33,13 +33,13 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(pattern)
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init()))
-            .pipe(plugins.babel({
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init({ loadMaps: true })))
+            .pipe(plugins.cache(plugins.babel({
                 presets: [
                     plugins.babelPresetEs2015,
                     plugins.babelPresetReact
                 ]
-            }).on('error', function () {
+            })).on('error', function () {
                 // errorHandler(err);
                 this.emit('end');
             }))

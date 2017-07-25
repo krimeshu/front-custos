@@ -1,17 +1,17 @@
 <template>
-    <div class="container">
-        <p v-for="(item, idx) in list" :data-total="total" :key="idx">
-            {{item}}
-        </p>    
+    <div class="container" :data-total="total">
+        <p v-for="(item, idx) in list" :key="idx" v-text="item"></p>
+        <p v-text="` -- ${name}`"></p>
     </div>
 </template>
 
 <script>
 export default {
-    data: function () {
+    props: ['name'],
+    data() {
         return {
-            list: ['hello world', '-- vue'],
-            total: 123
+            list: ['Hello World'],
+            total: 1
         }
     }
 }
@@ -21,6 +21,7 @@ export default {
 %flex {
     display: flex;
 }
+
 .container {
     @extend %flex;
     background: #eff;

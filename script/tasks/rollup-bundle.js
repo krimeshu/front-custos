@@ -25,7 +25,6 @@ PluginLoader.add({ 'babelPluginExternalHelpers': () => require('babel-plugin-ext
 PluginLoader.add({ 'postcssModules': () => require('postcss-modules') });
 
 // 使用Rollup打包JS:
-// - 内容中存在某行 'rollup entry'; 标记的脚本将被识别为入口进行打包
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
         var smOpt = params.smOpt || {},
@@ -34,6 +33,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
 
         var workDir = params.workDir,
             pattern = _path.resolve(workDir, '**/*@(.js|.jsx|.vue|.ts|.es6|.vue)'),
+            jsOpt = params.jsOpt || {},
             ruOpt = params.ruOpt || {};
 
         var timer = new Timer();
@@ -41,7 +41,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         logId && console.useId && console.useId(logId);
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
 
-        var entry = ruOpt.entry,
+        var entry = jsOpt.bundleEntry,
             format = ruOpt.format || 'es6';
         if (typeof entry == 'string' && entry.length) {
             entry = entry.split(/\r?\n/g).map((entryPath) => _path.resolve(workDir, entryPath));
@@ -56,7 +56,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             entry = (entry || []).concat(params.bundleEntry);
         }
         if (!entry || !entry.length) {
-            console.error('没有设置打包入口脚本。');
+            console.error('没有设置打包入口脚本，请配置或打开 find_bundle_entry 任务。');
             _finish();
             return;
         }
@@ -105,12 +105,17 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             }));
         }
         if (ruOptPlugins.uglify) {
-            plugin.push(plugins.rollupPluginUglify());
+            plugin.push(plugins.rollupPluginUglify({
+                    compress: {
+                        unused: false
+                    }
+                })
+            );
         }
 
         gulp.src(entry, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init()))
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init({ loadMaps: true })))
             .pipe(plugins.rollup(
                 // { plugins: plugin, onwarn: console.warn.bind(console) },
                 { plugins: plugin },

@@ -10,17 +10,19 @@
       "browsers": "Android > 2.3, iOS > 6.0",
       "cssnano": true
     },
+    "jsOpt": {
+      "bundleEntry": "js/bundle-entry.js\njs/use-components.js"
+    },
     "ruOpt": {
-      "entry": "js/use-es6-module.js",
       "plugins": {
         "nodeResolve": true,
         "commonJS": true,
         "babel": true,
         "vue": true,
         "postcssModules": true,
-        "uglify": true
+        "uglify": false
       },
-      "format": "es"
+      "format": "iife"
     },
     "alOpt": {
       "allot": true,
@@ -40,16 +42,16 @@
     },
     "tasks": [
       "compile_sass",
-      "run_babel",
       "prepare_build",
       "replace_const",
       "vue_php_ssr_template",
       "prefix_crafter",
       "sprite_crafter",
       "optimize_image",
+      "run_csso",
       "join_include",
       "rollup_bundle",
-      "run_browserify",
+      "run_uglify",
       "allot_link",
       "do_dist"
     ],
@@ -61,6 +63,9 @@
     "smOpt": {
       "mappingUrl": "/*\n    传给 gulp-sourcemaps 插件 write 参数中的 \n        sourceMappingURL 字段\n */\nfunction mappingUrl(file) {\n    // return 'http://asset-host.example.com/' + file.relative + '.map';\n    return require('path').basename(file.path) + '.map';\n}",
       "enable": true
+    },
+    "brOpt": {
+      "babelify": true
     }
   },
   "watchToRebuilding": false

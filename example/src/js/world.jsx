@@ -1,13 +1,29 @@
+import React from './lib/react.min';
+
 import style from './world.css';
 
-var HelloMessage = React.createClass({
-  render: function() {
-    return <h1 className={style.title}>Hello World --{this.props.name}</h1>;
-  }
-});
+export default class HelloMessage extends React.Component {
+  constructor(props) {
+    super(props);
 
-export default ReactDOM.render(
-  <HelloMessage name="react" />,
-  document.getElementById('reactApp')
-);
+    this.state = {
+      list: ['Hello World'],
+      total: 1
+    };
+  }
+
+  render() {
+    const { state, props } = this;
+    const { list, total } = state;
+    const { name } = props;
+    return <div className={style.box}
+      data-total={total}>
+      {list.map((item, idx) =>
+        <p key={idx}>{item}</p>
+      )}
+      <p>{` -- ${name}`}</p>
+    </div>
+  }
+}
+
 

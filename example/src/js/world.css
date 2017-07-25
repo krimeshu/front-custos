@@ -1,3 +1,4 @@
-.title {
+.box {
     background: #eff;
+    display: flex;
 }

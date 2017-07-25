@@ -4,9 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Example</title>
-    <script src="js/lib/vue.js"></script>
-    <script src="js/lib/react.js"></script>
-    <script src="js/lib/react-dom.js"></script>
 </head>
 
 <body>
@@ -42,33 +39,19 @@
             </code></pre>
         </p>
 
-        <h2>5. 用babel转换es6脚本（run_babel）：</h2>
-        <p>
-            <strong>源es6文件：</strong><br/>
-            <pre><code>
-#include('js/lib/es6-tests.es6')
-            </code></pre>
-        </p>
-        <p>
-            <strong>生成js文件：</strong><br/>
-            <pre><code>
-#include('js/lib/es6-tests.js')
-            </code></pre>
-        </p>
-
-        <h2>6. 用browserify打包脚本（run_browserify）：</h2>
+        <h2>5. 打包脚本：</h2>
         <p>
             <script src="js/bundle-entry.js"></script>
         </p>
 
-        <h2>7. 用rollup打包脚本（rollup_bundle）：</h2>
+        <h2>6. 处理 vue/react 组件：</h2>
         <div id="vueApp"></div>
         <div id="reactApp"></div>
         <p>
-            <script src="js/use-es6-module.js"></script>
+            <script src="js/use-components.js"></script>
         </p>
 
-        <h2>8. 分发并替换文件链接：</h2>
+        <h2>7. 分发并替换文件链接：</h2>
         <p>
             <img src="images/old-street.jpg" data-org-src="images/old-street.jpg" />
         </p>

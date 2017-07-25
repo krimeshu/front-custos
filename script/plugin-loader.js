@@ -58,5 +58,6 @@ var _this = {
 _this.add({ 'plumber': () => require('gulp-plumber') });
 _this.add({ 'gulpif': () => require('gulp-if') });
 _this.add({ 'sourcemaps': () => require('gulp-sourcemaps') });
+_this.add({ 'cache': () => require('gulp-cache') });
 
 module.exports = _this;

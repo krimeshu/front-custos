@@ -14,7 +14,6 @@ var _path = require('path'),
 PluginLoader.add({ 'del': () => require('del') });
 PluginLoader.add({ 'imagemin': () => require('gulp-imagemin') });
 PluginLoader.add({ 'pngquant': () => require('imagemin-pngquant') });
-PluginLoader.add({ 'cache': () => require('gulp-cache') });
 
 var cacheDirName = 'imagemin-cache';
 

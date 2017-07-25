@@ -1,7 +1,7 @@
 import ES6TestRunner from './es6-test-runner';
 
 var testRunner = new ES6TestRunner({
-    'test-let': function () {
+    'test-let'() {
         var a = [];
         for (let i = 0; i < 10; i++) {
             a[i] = function () {
@@ -10,7 +10,7 @@ var testRunner = new ES6TestRunner({
         }
         a[6](); // 6
     },
-    'test-class': function () {
+    'test-class'() {
         class Animal {
             constructor() {
                 this.type = 'animal';
@@ -34,7 +34,7 @@ var testRunner = new ES6TestRunner({
         let cat = new Cat();
         cat.says('hello'); //cat says hello
     },
-    'test-templateString': function () {
+    'test-templateString'() {
         var basket = {
             items: ['apple'],
             count: 1,
@@ -47,16 +47,16 @@ var testRunner = new ES6TestRunner({
   `;
         console.log(str);
     },
-    'test-destructuring': function () {
+    'test-destructuring'() {
         let dog = { type: 'animal', many: 2 };
-        let {type, many} = dog;
+        let { type, many } = dog;
         console.log(type, many);   //animal 2
 
         let cat = { type: "animal", many: 1 };
         let zoo = { cat, dog };
         console.log(zoo);  //Object {cat: {"type": "animal", "many": 1} dog: {"type": "animal", "many": 2}}
     },
-    'test-defaultAndRest': function () {
+    'test-defaultAndRest'() {
         function animal(type = 'cat') {
             console.log(type);
         }
@@ -69,7 +69,7 @@ var testRunner = new ES6TestRunner({
 
         animals('cat', 'dog', 'fish'); //["cat", "dog", "fish"]
     },
-    'test-arrowFunction': function () {
+    'test-arrowFunction'() {
         var asyncTask = {
             name: 'async task',
             run: function () {
@@ -83,9 +83,9 @@ var testRunner = new ES6TestRunner({
     }
 });
 
-export function test() {
+testRunner.test = function () {
     document.write('test in es6-tests.es6<br/>');
     testRunner.runTests();
-}
+};
 
 export default testRunner;

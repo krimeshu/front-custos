@@ -28,10 +28,10 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
         gulp.src(_path.resolve(workDir, '**/*.css'))
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
-            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init()))
+            .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init({ loadMaps: true })))
             .pipe(plugins.csso({
                 restructure: false,
-                sourceMap: false,
+                sourceMap: true,
                 debug: false
             }))
             .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
