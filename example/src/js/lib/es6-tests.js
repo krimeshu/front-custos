@@ -1,7 +1,7 @@
 import ES6TestRunner from './es6-test-runner';
 
 var testRunner = new ES6TestRunner({
-    'test-let'() {
+    'test-let': function () {
         var a = [];
         for (let i = 0; i < 10; i++) {
             a[i] = function () {
@@ -10,7 +10,7 @@ var testRunner = new ES6TestRunner({
         }
         a[6](); // 6
     },
-    'test-class'() {
+    'test-class': function () {
         class Animal {
             constructor() {
                 this.type = 'animal';
@@ -34,7 +34,7 @@ var testRunner = new ES6TestRunner({
         let cat = new Cat();
         cat.says('hello'); //cat says hello
     },
-    'test-templateString'() {
+    'test-templateString': function () {
         var basket = {
             items: ['apple'],
             count: 1,
@@ -47,16 +47,28 @@ var testRunner = new ES6TestRunner({
   `;
         console.log(str);
     },
-    'test-destructuring'() {
-        let dog = { type: 'animal', many: 2 };
-        let { type, many } = dog;
-        console.log(type, many);   //animal 2
+    'test-destructuring': function () {
+        let dog = {
+            type: 'animal',
+            many: 2
+        };
+        let {
+            type,
+            many
+        } = dog;
+        console.log(type, many); //animal 2
 
-        let cat = { type: "animal", many: 1 };
-        let zoo = { cat, dog };
-        console.log(zoo);  //Object {cat: {"type": "animal", "many": 1} dog: {"type": "animal", "many": 2}}
+        let cat = {
+            type: "animal",
+            many: 1
+        };
+        let zoo = {
+            cat,
+            dog
+        };
+        console.log(zoo); //Object {cat: {"type": "animal", "many": 1} dog: {"type": "animal", "many": 2}}
     },
-    'test-defaultAndRest'() {
+    'test-defaultAndRest': function () {
         function animal(type = 'cat') {
             console.log(type);
         }
@@ -69,7 +81,7 @@ var testRunner = new ES6TestRunner({
 
         animals('cat', 'dog', 'fish'); //["cat", "dog", "fish"]
     },
-    'test-arrowFunction'() {
+    'test-arrowFunction': function () {
         var asyncTask = {
             name: 'async task',
             run: function () {
@@ -80,11 +92,12 @@ var testRunner = new ES6TestRunner({
             }
         };
         asyncTask.run();
-    },
-    test() {
-        document.write('test in es6-tests.es6<br/>');
-        testRunner.runTests();
     }
 });
+
+testRunner.test = function () {
+    document.write('test in es6-tests.es6<br/>');
+    testRunner.runTests();
+};
 
 export default testRunner;
