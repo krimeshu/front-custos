@@ -13,7 +13,8 @@ PluginLoader.add({
     'browserify': () => require('browserify'),
     'babelify': () => require('babelify'),
     'vueify': () => require('vueify'),
-    'babelPluginCssModulesReact': () => require('babel-plugin-css-modules-react'),
+    'babelPluginTransformPostcss': () => require('babel-plugin-transform-postcss'),
+    // 'babelPluginCssModulesReact': () => require('babel-plugin-css-modules-react'),
     // 'babelPluginTransformPostcss': () => require('babel-plugin-transform-postcss'),
     // 'babelPluginReactCssModules': () => require('babel-plugin-react-css-modules'),
     // 'babelPluginCssModulesTransform': () => require('babel-plugin-css-modules-transform'),
@@ -30,7 +31,14 @@ var BrowserifyProxy = function (opts, onError) {
             plugins.babelPresetReact
         ],
         plugins: [
-            plugins.babelPluginCssModulesReact.default,
+            [plugins.babelPluginTransformPostcss.default, {
+                plugin: [
+                    plugins.postcssModules({
+                        getJSON: () => {}
+                    })
+                ]
+            }]
+            // plugins.babelPluginCssModulesReact.default,
             // plugins.babelPluginCssModulesTransform.default
             // [plugins.babelPluginReactCssModules.default, {
             //     generateScopedName: function (name, filename, css) {
