@@ -50,7 +50,7 @@
       "optimize_image",
       "run_csso",
       "join_include",
-      "run_browserify",
+      "webpack_bundle",
       "allot_link",
       "do_dist"
     ],

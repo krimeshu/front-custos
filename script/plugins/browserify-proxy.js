@@ -13,12 +13,12 @@ PluginLoader.add({
     'browserify': () => require('browserify'),
     'babelify': () => require('babelify'),
     'vueify': () => require('vueify'),
-    'babelPluginTransformPostcss': () => require('babel-plugin-transform-postcss'),
-    // 'babelPluginCssModulesReact': () => require('babel-plugin-css-modules-react'),
-    // 'babelPluginTransformPostcss': () => require('babel-plugin-transform-postcss'),
-    // 'babelPluginReactCssModules': () => require('babel-plugin-react-css-modules'),
-    // 'babelPluginCssModulesTransform': () => require('babel-plugin-css-modules-transform'),
+    'lessModulesify': () => require('less-modulesify')
     // 'postcssModules': () => require('postcss-modules')
+    // 'babelPluginTransformPostcss': () => require('babel-plugin-transform-postcss'),          // server error on windows
+    // 'babelPluginCssModulesReact': () => require('babel-plugin-css-modules-react'),           // 'unexpected token ..'
+    // 'babelPluginReactCssModules': () => require('babel-plugin-react-css-modules'),           // 'unexpected token ..'
+    // 'babelPluginCssModulesTransform': () => require('babel-plugin-css-modules-transform'),   // need to extract css
 });
 
 var BrowserifyProxy = function (opts, onError) {
@@ -31,25 +31,16 @@ var BrowserifyProxy = function (opts, onError) {
             plugins.babelPresetReact
         ],
         plugins: [
-            [plugins.babelPluginTransformPostcss.default, {
-                plugin: [
-                    plugins.postcssModules({
-                        getJSON: () => {}
-                    })
-                ]
-            }]
+            // [plugins.babelPluginTransformPostcss.default, {
+            //     plugin: [
+            //         plugins.postcssModules({
+            //             getJSON: () => {}
+            //         })
+            //     ]
+            // }]
             // plugins.babelPluginCssModulesReact.default,
             // plugins.babelPluginCssModulesTransform.default
-            // [plugins.babelPluginReactCssModules.default, {
-            //     generateScopedName: function (name, filename, css) {
-            //         var path = require('path');
-            //         var i = css.indexOf('.' + name);
-            //         var line = css.substr(0, i).split(/[\r\n]/).length;
-            //         var file = path.basename(filename, '.css');
-
-            //         return '_' + file + '_' + line + '_' + name;
-            //     }
-            // }]
+            // plugins.babelPluginReactCssModules.default
         ]
     };
     this.vueifyOpts = !opts.vueify ? null : {
@@ -59,20 +50,16 @@ var BrowserifyProxy = function (opts, onError) {
                 plugins.babelPresetReact
             ],
             plugins: [
-                plugins.babelPluginTransformRuntime
+                plugins.babelPluginTransformRuntime.default
             ]
         }
     };
-    // this.cssModules = !opts.cssModules ? null : {
-    //     plugin: [
-    //         plugins.postcssModules({
-    //             getJSON: function (id, exportTokens) {
-    //                 cssExportMap[id] = exportTokens;
-    //             }
-    //         })
-    //     ],
-    //     inject: true
-    // };
+    this.lessOpts = !opts.cssModules ? null : {
+        sourceMap: true,
+        lessCompileOption: {
+            compress: true
+        }
+    };
     delete opts.babelify;
     delete opts.vueify;
     this.opts = opts;
@@ -98,9 +85,9 @@ BrowserifyProxy.prototype = {
             var errReturned = false,
                 bundler = plugins.browserify(file.path, self.opts);
 
-            // if (self.cssModules) {
-            //     bundler = bundler.transform(plugins.browserifyPostcss, self.cssModules);
-            // }
+            if (self.lessOpts) {
+                bundler = bundler.plugin(plugins.lessModulesify, self.lessOpts);
+            }
 
             if (self.babelifyOpts) {
                 bundler = bundler.transform(plugins.babelify.configure(self.babelifyOpts));
