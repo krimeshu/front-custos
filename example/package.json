@@ -66,8 +66,7 @@
     "brOpt": {
       "babelify": true,
       "vueify": true,
-      "cssModulesify": true,
-      "cssModules": true
+      "lessModulesify": true
     }
   },
   "watchToRebuilding": false

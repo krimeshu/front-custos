@@ -54,7 +54,7 @@ var BrowserifyProxy = function (opts, onError) {
             ]
         }
     };
-    this.lessOpts = !opts.cssModules ? null : {
+    this.lessOpts = !opts.lessModulesify ? null : {
         sourceMap: true,
         lessCompileOption: {
             compress: true

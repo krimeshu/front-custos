@@ -37,9 +37,9 @@ FileLinker.prototype = {
     _getRegExp: function (type) {
         var self = this,
             reg = type === 'css' ? self._regExpCss :
-            type === 'html' ? self._regExpHtml :
-            type === 'map' ? self._regExpMap :
-            self._regExp;
+                type === 'html' ? self._regExpHtml :
+                    type === 'map' ? self._regExpMap :
+                        self._regExp;
         return new RegExp(reg);
     },
     // 分析项目的文件引用关系
@@ -252,9 +252,18 @@ FileLinker.prototype = {
         var basePattern = basePath.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
             regExp = new RegExp('[\'"](' + basePattern + '[^\'"]*)[\'"]', 'gi');
 
-        var content = String(file.contents),
-            newContent = content;
+        var content = String(file.contents);
 
+        // 处理 webpack 加载 loader 时的中间路径
+        var cwdPath = Utils.replaceBackSlash(process.cwd()) + '/',
+            cwdBasePattern = '"webpack:\\/+' + cwdPath.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+            cwdBaseReg = new RegExp(cwdBasePattern, 'g');
+
+        content = content.replace(cwdBaseReg, '"');
+
+        var newContent = content;
+
+        // 处理构建过程中的绝对路径
         while ((match = regExp.exec(content)) !== null) {
             var _rawStr = match[0],
                 _rawFile = match[1],
@@ -271,6 +280,13 @@ FileLinker.prototype = {
                 newContent = newContent.replace(_reg, _newStr.replace(/\u0024([$`&'])/g, '$$$$$1'));
             }
         }
+
+        // var modulePath = _path.join(__dirname, '../../node_modules'),
+        //     modulePattern = modulePath.replace(/[\/\\]/g, '[\\\/\\\\]+'),
+        //     regExpModule = new RegExp(modulePattern, 'g');
+
+        // newContent = newContent.replace(regExpModule, '...');
+
         if (cb) {
             file.contents = new Buffer(newContent);
         }
@@ -402,8 +418,8 @@ FileLinker.prototype = {
         $('link[href], img[src], script[src], audio[src], video[src], source[src]').each(function () {
             var $this = $(this),
                 propName = $this.is('[src]') ? 'src' :
-                $this.is('[href]') ? 'href' :
-                null;
+                    $this.is('[href]') ? 'href' :
+                        null;
             if (!propName) {
                 return;
             }

@@ -71,15 +71,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             entryObj[entryPath] = entryPath;
         });
 
-        var moduleRoot = './front-custos/node_modules/';
-        moduleRoot = Utils.replaceBackSlash(_path.join(process.cwd(), moduleRoot));
-        function resolveLoader() {
-            var names = [];
-            [].forEach.call(arguments, function (name) {
-                names.push(moduleRoot + name);
-            });
-            return names.join('!');
-        };
+        var modulePath = _path.join(__dirname, '../../node_modules');
 
         gulp.src(entry, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
@@ -90,16 +82,21 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 output: {
                     filename: '[name]'
                 },
-                devtool: isSourcemapEnabled ? 'cheap-inline-module-source-map ' : undefined,
+                devtool: isSourcemapEnabled ? 'inline-source-map' : undefined,
+                resolveLoader: {
+                    modules: [
+                        modulePath
+                    ]
+                },
                 module: {
                     rules: [
                         {
                             test: /\.css$/,
                             use: [
-                                resolveLoader('style-loader'),
-                                resolveLoader('css-loader?modules&importLoaders=1'),
+                                'style-loader',
+                                'css-loader?modules&importLoaders=1',
                                 {
-                                    loader: resolveLoader('postcss-loader'),
+                                    loader: 'postcss-loader',
                                     options: {
                                         plugins: () => [
                                             plugins.autoprefixer
@@ -111,7 +108,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                             test: /\.(js|jsx|es6)$/,
                             exclude: /node_modules/,
                             use: {
-                                loader: resolveLoader('babel-loader'),
+                                loader: 'babel-loader',
                                 options: {
                                     presets: [
                                         plugins.babelPresetEs2015,
@@ -123,13 +120,13 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                             test: /\.vue$/,
                             exclude: /node_modules/,
                             use: {
-                                loader: resolveLoader('vue-loader'),
+                                loader: 'vue-loader',
                                 options: {
                                     loaders: {
-                                        js: resolveLoader('babel-loader'),
-                                        css: resolveLoader('vue-style-loader', 'css-loader'),
-                                        sass: resolveLoader('vue-style-loader', 'css-loader', 'sass-loader?indentedSyntax'),
-                                        scss: resolveLoader('vue-style-loader', 'css-loader', 'sass-loader')
+                                        js: 'babel-loader',
+                                        css: 'vue-style-loader!css-loader',
+                                        sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax',
+                                        scss: 'vue-style-loader!css-loader!sass-loader'
                                     }
                                 }
                             }
