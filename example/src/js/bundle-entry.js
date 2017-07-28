@@ -17,5 +17,13 @@ class CountObj {
         CountObj.count++;
         this.id = CountObj.count;
     }
+    async load() {
+        return await this.doLoad(ms);
+    }
+    doLoad() {
+        return new Promise((resolve) => {
+            setTimeout(resolve, ms);
+        });
+    }
 }
 
