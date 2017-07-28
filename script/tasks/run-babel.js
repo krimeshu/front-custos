@@ -14,6 +14,7 @@ PluginLoader.add({
     'babel': () => require('gulp-babel'),
     'babelPresetEs2015': () => require('babel-preset-es2015'),
     'babelPresetReact': () => require('babel-preset-react'),
+    'babelPresetStage2': () => require('babel-preset-stage-2'),
     'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers')
 });
 
@@ -42,7 +43,8 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             .pipe(plugins.cache(plugins.babel({
                 presets: [
                     plugins.babelPresetEs2015,
-                    plugins.babelPresetReact
+                    plugins.babelPresetReact,
+                    plugins.babelPresetStage2
                 ],
                 plugins: [plugins.babelPluginExternalHelpers]
             })).on('error', function () {

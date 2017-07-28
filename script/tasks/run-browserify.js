@@ -11,11 +11,7 @@ var _path = require('path'),
     Timer = require('../timer.js');
 
 PluginLoader.add({
-    'BrowserifyProxy': () => require('../plugins/browserify-proxy.js'),
-    'babelPresetEs2015': () => require('babel-preset-es2015'),
-    'babelPresetReact': () => require('babel-preset-react'),
-    'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime'),
-    'cssModulesify': () => require('css-modulesify')
+    'BrowserifyProxy': () => require('../plugins/browserify-proxy.js')
 });
 
 // 使用Browserify打包JS:

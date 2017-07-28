@@ -11,18 +11,25 @@ var _fs = require('fs'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-PluginLoader.add({ 'rollup': () => require('gulp-rollup') });
-PluginLoader.add({ 'rollupPluginNodeResolve': () => require('rollup-plugin-node-resolve') });
-PluginLoader.add({ 'rollupPluginCommonJS': () => require('rollup-plugin-commonjs') });
-PluginLoader.add({ 'rollupPluginBabel': () => require('rollup-plugin-babel') });
-PluginLoader.add({ 'rollupPluginVue': () => require('rollup-plugin-vue') });
-PluginLoader.add({ 'rollupPluginPostcss': () => require('rollup-plugin-postcss') });
+PluginLoader.add({
+    'rollup': () => require('gulp-rollup'),
+    'rollupPluginNodeResolve': () => require('rollup-plugin-node-resolve'),
+    'rollupPluginCommonJS': () => require('rollup-plugin-commonjs'),
+    'rollupPluginBabel': () => require('rollup-plugin-babel'),
+    'rollupPluginVue': () => require('rollup-plugin-vue'),
+    'rollupPluginPostcss': () => require('rollup-plugin-postcss')
+});
 
-PluginLoader.add({ 'babelPresetEs2015': () => require('babel-preset-es2015') });
-PluginLoader.add({ 'babelPresetReact': () => require('babel-preset-react') });
-PluginLoader.add({ 'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers') });
+PluginLoader.add({
+    'babelPresetEs2015': () => require('babel-preset-es2015'),
+    'babelPresetReact': () => require('babel-preset-react'),
+    'babelPresetStage2': () => require('babel-preset-stage-2'),
+    'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers')
+});
 
-PluginLoader.add({ 'postcssModules': () => require('postcss-modules') });
+PluginLoader.add({
+    'postcssModules': () => require('postcss-modules')
+});
 
 var rollupCaches = {};
 
@@ -101,7 +108,8 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             plugin.push(plugins.rollupPluginBabel({
                 presets: [
                     [plugins.babelPresetEs2015.buildPreset, { modules: false }],
-                    plugins.babelPresetReact
+                    plugins.babelPresetReact,
+                    plugins.babelPresetStage2
                 ],
                 plugins: [plugins.babelPluginExternalHelpers]
             }));

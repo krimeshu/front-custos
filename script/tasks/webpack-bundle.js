@@ -16,10 +16,11 @@ PluginLoader.add({ 'gulpWebpack': () => require('webpack-stream') });
 
 PluginLoader.add({ 'autoprefixer': () => require('autoprefixer') });
 
-PluginLoader.add({ 'babelPresetEs2015': () => require('babel-preset-es2015') });
-PluginLoader.add({ 'babelPresetReact': () => require('babel-preset-react') });
-PluginLoader.add({ 'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers') });
-
+PluginLoader.add({
+    'babelPresetEs2015': () => require('babel-preset-es2015'),
+    'babelPresetReact': () => require('babel-preset-react'),
+    'babelPresetStage2': () => require('babel-preset-stage-2')
+});
 // 使用Webpack打包JS:
 module.exports = function (console, gulp, params, errorHandler, taskName) {
     return function (done) {
@@ -112,7 +113,8 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                                 options: {
                                     presets: [
                                         plugins.babelPresetEs2015,
-                                        plugins.babelPresetReact
+                                        plugins.babelPresetReact,
+                                        plugins.babelPresetStage2
                                     ]
                                 }
                             }

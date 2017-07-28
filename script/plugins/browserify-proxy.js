@@ -21,6 +21,12 @@ PluginLoader.add({
     // 'babelPluginCssModulesTransform': () => require('babel-plugin-css-modules-transform'),   // need to extract css
 });
 
+PluginLoader.add({
+    'babelPresetEs2015': () => require('babel-preset-es2015'),
+    'babelPresetReact': () => require('babel-preset-react'),
+    'babelPresetStage2': () => require('babel-preset-stage-2')
+});
+
 var BrowserifyProxy = function (opts, onError) {
     var self = this;
     self.onError = onError;
