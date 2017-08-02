@@ -489,7 +489,6 @@ FileLinker.prototype = {
 
         // 相关配置项
         var src = alOpt.src,
-            allot = alOpt.allot,
             pageAllotDir = alOpt.pageDir,
             staticAllotDir = alOpt.staticDir,
             staticUrlHead = alOpt.staticUrlHead,
@@ -554,8 +553,9 @@ FileLinker.prototype = {
                 _path.relative(src, _path.resolve(src, flattenDir, baseName)) :
                 _path.relative(src, filePath)
             );
-            var newFilePath = Utils.replaceBackSlash(allot ?
-                _path.resolve(src, isPage ? pageAllotDir : staticAllotDir, fileRela) :
+            var allotDir = isPage ? pageAllotDir : staticAllotDir;
+            var newFilePath = Utils.replaceBackSlash(allotDir ?
+                _path.resolve(src, allotDir, fileRela) :
                 _path.resolve(src, fileRela)
             );
 
@@ -589,16 +589,18 @@ FileLinker.prototype = {
                     // 普通的文件相对路径
                     _path.relative(src, _filePath)
                 );
+                var _allotDir = _isPage ? pageAllotDir : staticAllotDir;
                 // 文件新路径（实际保存位置）
-                var _newFilePath = (allot ?
+                var _newFilePath = (_allotDir ?
                     // 分发后的文件路径（页面文件与静态资源文件分开存放）
-                    _path.resolve(src, _isPage ? pageAllotDir : staticAllotDir, _fileRela) :
+                    _path.resolve(src, _allotDir, _fileRela) :
                     // 不分发的文件路径
                     _path.resolve(src, _fileRela)
                 );
                 var _newFile;
 
-                if (allot && !_isPage && !fromCss && useStaticUrlHead && staticUrlHead) {
+                if (!_isPage && !fromCss && useStaticUrlHead) {
+                    // 使用静态链接前缀
                     var _sp = staticUrlHead.charAt(staticUrlHead.length - 1) !== '/' ? '/' : '';
                     _newFile = staticUrlHead + _sp + _fileRela;
                 } else {
