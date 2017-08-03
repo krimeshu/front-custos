@@ -240,18 +240,42 @@ exports.replaceBackSlash = function (filePath) {
 };
 
 // 格式验证相关 ST
+exports.getMIME = function (file) {
+    var extName = _path.extname(file).substr(1).toLowerCase(),
+    MIME = {
+        'gif': 'image/gif',
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'bmp': 'image/bmp',
+        'webp': 'image/webp',
+        'mp3': 'audio/mpeg',
+        'wav': 'audio/x-wav',
+        'ogg': 'application/ogg',
+        'mid': 'audio/midi',
+        'midi': 'audio/midi',
+        'svg': 'image/svg+xml',
+        'ttf': 'font/truetype',
+        'otf': 'font/opentype',
+        'woff': 'font/woff',
+        'woff2': 'font/woff2',
+        'sfnt': 'font/sfnt',
+        'eot': 'application/vnd.ms-fontobject'
+    };
+
+};
 exports.getFileType = function (file) {
-    var extName = _path.extname(file).toLowerCase(),
+    var extName = _path.extname(file).substr(1).toLowerCase(),
         fileTypes = exports.getFileType._fileTypes || (
             exports.getFileType._fileTypes = {
-                page: ['.php', '.html', '.shtml'],
-                style: ['.css', '.sass', '.scss'],
-                script: ['.js', '.jsx', '.es6', '.vue', '.ts', '.es6'],
-                sourcemap: ['.map'],
-                image: ['.jpg', '.jpeg', '.png', '.gif'],
-                font: ['.eot', '.svg', '.ttf', '.woff', '.woff2'],
-                audio: ['.mp3', '.wav', '.ogg'],
-                dataText: ['.json', '.xml']
+                page: ['php', 'html', 'shtml'],
+                style: ['css', 'sass', 'scss'],
+                script: ['js', 'jsx', 'es6', 'vue', 'ts', 'es6'],
+                sourcemap: ['map'],
+                image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'],
+                font: ['svg', 'ttf', 'otf', 'woff', 'woff2', 'sfnt', 'eot'],
+                audio: ['mp3', 'wav', 'ogg', 'mid', 'midi'],
+                dataText: ['json', 'xml']
             }
         );
     for (var type in fileTypes) {

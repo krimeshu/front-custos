@@ -154,10 +154,7 @@ FileIncluder.prototype = {
                 }
                 var _content = cache[_file],
                     _extName = _path.extname(_file);
-                if (Utils.isImage(_file)) {
-                    _content = 'data:image/' + _extName.substr(1) +
-                        ';base64, ' + _content.toString('base64');
-                } else if (isText) {
+                if (Utils.isText(_file)) {
                     // 去掉已经失效的 sourcemap
                     _content = _content.replace(/(?:\/\/|\/\*)\s*#\s*sourceMappingURL=['"]?(.*?)['"]?\s*(\*\/\s*)?($|\n)/gi, '');
                     if (_inlineString) {
@@ -185,6 +182,9 @@ FileIncluder.prototype = {
                             _content = _content.replace(valueReg, value.replace(/\u0024([$`&'])/g, '$$$$$1'));
                         }
                     }
+                } else {
+                    var mime = Utils.getMIME(_file) || 'application/octet-stream';
+                    _content = 'data:' + mime + ';base64,' + _content.toString('base64');
                 }
                 newContent = newContent.replace(_str, _content.replace(/\u0024([$`&'])/g, '$$$$$1'));
             }
