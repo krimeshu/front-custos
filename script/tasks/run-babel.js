@@ -15,7 +15,7 @@ PluginLoader.add({
     'babelPresetEs2015': () => require('babel-preset-es2015'),
     'babelPresetReact': () => require('babel-preset-react'),
     'babelPresetStage2': () => require('babel-preset-stage-2'),
-    'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers')
+    // 'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
 });
 
 // 使用 babel 处理脚本文件:
@@ -46,7 +46,9 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                     plugins.babelPresetReact,
                     plugins.babelPresetStage2
                 ],
-                plugins: [plugins.babelPluginExternalHelpers]
+                plugins: [
+                    // plugins.babelPluginTransformRuntime.default
+                ]
             })).on('error', function () {
                 // errorHandler(err);
                 this.emit('end');

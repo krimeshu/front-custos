@@ -15,16 +15,17 @@ PluginLoader.add({
     'rollup': () => require('gulp-rollup'),
     'rollupPluginNodeResolve': () => require('rollup-plugin-node-resolve'),
     'rollupPluginCommonJS': () => require('rollup-plugin-commonjs'),
-    'rollupPluginBabel': () => require('rollup-plugin-babel'),
     'rollupPluginVue': () => require('rollup-plugin-vue'),
-    'rollupPluginPostcss': () => require('rollup-plugin-postcss')
+    'rollupPluginPostcss': () => require('rollup-plugin-postcss'),
+    'rollupPluginBabel': () => require('rollup-plugin-babel'),
+    'rollupPluginUglify': () => require('rollup-plugin-uglify')
 });
 
 PluginLoader.add({
     'babelPresetEs2015': () => require('babel-preset-es2015'),
     'babelPresetReact': () => require('babel-preset-react'),
     'babelPresetStage2': () => require('babel-preset-stage-2'),
-    'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers')
+    // 'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
 });
 
 PluginLoader.add({
@@ -43,6 +44,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
 
         var workDir = params.workDir,
             pattern = _path.resolve(workDir, '**/*@(.js|.jsx|.vue|.ts|.es6|.vue)'),
+            jsOpt = params.jsOpt || {},
             ruOpt = params.ruOpt || {};
 
         var timer = new Timer();
@@ -50,7 +52,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         logId && console.useId && console.useId(logId);
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
 
-        var entry = ruOpt.entry,
+        var entry = jsOpt.bundleEntry,
             format = ruOpt.format || 'es6';
         if (typeof entry == 'string' && entry.length) {
             entry = entry.split(/\r?\n/g).map((entryPath) => _path.resolve(workDir, entryPath));
@@ -65,7 +67,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             entry = (entry || []).concat(params.bundleEntry);
         }
         if (!entry || !entry.length) {
-            console.error('没有设置打包入口脚本。');
+            console.error('没有设置打包入口脚本，请配置或打开 find_bundle_entry 任务。');
             _finish();
             return;
         }
@@ -106,12 +108,23 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         }
         if (ruOptPlugins.babel) {
             plugin.push(plugins.rollupPluginBabel({
+                // runtimeHelpers: true,
                 presets: [
                     [plugins.babelPresetEs2015.buildPreset, { modules: false }],
                     plugins.babelPresetReact,
                     plugins.babelPresetStage2
                 ],
-                plugins: [plugins.babelPluginExternalHelpers]
+                plugins: [
+                    // plugins.babelPluginTransformRuntime
+                ]
+            }));
+        }
+
+        if (ruOptPlugins.uglify) {
+            plugin.push(plugins.rollupPluginUglify({
+                compress: {
+                    unused: false
+                }
             }));
         }
 
@@ -147,7 +160,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             })
             .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))
             .pipe(gulp.dest(workDir))
-            .on('end', _finish);
+            .once('end', _finish);
 
         function _finish() {
             try {

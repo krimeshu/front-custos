@@ -19,7 +19,8 @@ PluginLoader.add({ 'autoprefixer': () => require('autoprefixer') });
 PluginLoader.add({
     'babelPresetEs2015': () => require('babel-preset-es2015'),
     'babelPresetReact': () => require('babel-preset-react'),
-    'babelPresetStage2': () => require('babel-preset-stage-2')
+    'babelPresetStage2': () => require('babel-preset-stage-2'),
+    'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
 });
 // 使用Webpack打包JS:
 module.exports = function (console, gulp, params, errorHandler, taskName) {
@@ -84,6 +85,11 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                     filename: '[name]'
                 },
                 devtool: isSourcemapEnabled ? 'inline-source-map' : undefined,
+                resolve: {
+                    modules: [
+                        modulePath
+                    ]
+                },
                 resolveLoader: {
                     modules: [
                         modulePath
@@ -115,6 +121,9 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                                         plugins.babelPresetEs2015,
                                         plugins.babelPresetReact,
                                         plugins.babelPresetStage2
+                                    ],
+                                    plugins: [
+                                        [plugins.babelPluginTransformRuntime.default, { "polyfill": false }]
                                     ]
                                 }
                             }

@@ -21,10 +21,11 @@ PluginLoader.add({
 });
 
 PluginLoader.add({
-    'babelPresetEs2015': () => require('babel-preset-es2015'),
+    // 'babelPresetEs2015': () => require('babel-preset-es2015'),
+    'babelPresetEs2015Rollup': () => require('babel-preset-es2015-rollup'),
     'babelPresetReact': () => require('babel-preset-react'),
     'babelPresetStage2': () => require('babel-preset-stage-2'),
-    'babelPluginExternalHelpers': () => require('babel-plugin-external-helpers')
+    // 'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
 });
 
 PluginLoader.add({
@@ -96,14 +97,21 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 }
             }));
         }
+
+        // var modulePath = _path.join(__dirname, '../../node_modules');
+
         if (ruOptPlugins.babel) {
             plugin.push(plugins.rollupPluginBabel({
+                // runtimeHelpers: true,
                 presets: [
-                    [plugins.babelPresetEs2015.buildPreset, { modules: false }],
+                    plugins.babelPresetEs2015Rollup,
+                    // [plugins.babelPresetEs2015.buildPreset, { modules: false }],
                     plugins.babelPresetReact,
                     plugins.babelPresetStage2
                 ],
-                plugins: [plugins.babelPluginExternalHelpers]
+                plugins: [
+                    // plugins.babelPluginTransformRuntime  // move to options
+                ]
             }));
         }
         if (ruOptPlugins.uglify) {
@@ -111,16 +119,17 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 compress: {
                     unused: false
                 }
-            })
-            );
+            }));
         }
 
         gulp.src(entry, { base: workDir })
             .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
             .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.init({ loadMaps: true })))
             .pipe(plugins.rollup(
-                // { plugins: plugin, onwarn: console.warn.bind(console) },
-                { plugins: plugin },
+                {
+                    onwarn: console.warn.bind(console),
+                    plugins: plugin
+                },
                 { format: format }
             ))
             .pipe(plugins.gulpif(isSourcemapEnabled, plugins.sourcemaps.write('', { sourceMappingURL })))

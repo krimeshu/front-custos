@@ -24,7 +24,8 @@ PluginLoader.add({
 PluginLoader.add({
     'babelPresetEs2015': () => require('babel-preset-es2015'),
     'babelPresetReact': () => require('babel-preset-react'),
-    'babelPresetStage2': () => require('babel-preset-stage-2')
+    'babelPresetStage2': () => require('babel-preset-stage-2'),
+    // 'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
 });
 
 var BrowserifyProxy = function (opts, onError) {
@@ -34,9 +35,11 @@ var BrowserifyProxy = function (opts, onError) {
     this.babelifyOpts = !opts.babelify ? null : {
         presets: [
             plugins.babelPresetEs2015,
-            plugins.babelPresetReact
+            plugins.babelPresetReact,
+            plugins.babelPresetStage2
         ],
         plugins: [
+            [plugins.babelPluginTransformRuntime.default, { "polyfill": false }]
             // [plugins.babelPluginTransformPostcss.default, {
             //     plugin: [
             //         plugins.postcssModules({
@@ -56,7 +59,7 @@ var BrowserifyProxy = function (opts, onError) {
                 plugins.babelPresetReact
             ],
             plugins: [
-                plugins.babelPluginTransformRuntime.default
+                // plugins.babelPluginTransformRuntime.default
             ]
         }
     };

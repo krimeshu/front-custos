@@ -1,9 +1,9 @@
 import * as modFuncs from './lib/mod-funcs';
-import i from './lib/mod-funcs';
+import { i } from './lib/mod-funcs';
 import tester from './lib/es6-tests';
 
 modFuncs.foo();
-modFuncs.bar();
+// modFuncs.bar();
 
 console.log('modFuncs.i:', modFuncs.i);
 console.log('i in modFuncs:', modFuncs.i);
@@ -17,13 +17,18 @@ class CountObj {
         CountObj.count++;
         this.id = CountObj.count;
     }
-    async load() {
-        return await this.doLoad(ms);
+    async load(ms) {
+        let now = await this.doLoad(ms);
+        console.log('Now is:', now);
+        return now;
     }
-    doLoad() {
+    doLoad(ms) {
         return new Promise((resolve) => {
-            setTimeout(resolve, ms);
+            setTimeout(() => {
+                resolve(new Date());
+            }, ms);
         });
     }
 }
 
+new CountObj().load(2000);

@@ -25,7 +25,6 @@
       "format": "iife"
     },
     "alOpt": {
-      "allot": true,
       "pageDir": "page",
       "staticDir": "static",
       "staticUrlHead": "http://example.com/{PROJECT_NAME}",
