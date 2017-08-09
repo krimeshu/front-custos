@@ -242,27 +242,27 @@ exports.replaceBackSlash = function (filePath) {
 // 格式验证相关 ST
 exports.getMIME = function (file) {
     var extName = _path.extname(file).substr(1).toLowerCase(),
-    MIME = {
-        'gif': 'image/gif',
-        'png': 'image/png',
-        'jpg': 'image/jpeg',
-        'jpeg': 'image/jpeg',
-        'bmp': 'image/bmp',
-        'webp': 'image/webp',
-        'mp3': 'audio/mpeg',
-        'wav': 'audio/x-wav',
-        'ogg': 'application/ogg',
-        'mid': 'audio/midi',
-        'midi': 'audio/midi',
-        'svg': 'image/svg+xml',
-        'ttf': 'font/truetype',
-        'otf': 'font/opentype',
-        'woff': 'font/woff',
-        'woff2': 'font/woff2',
-        'sfnt': 'font/sfnt',
-        'eot': 'application/vnd.ms-fontobject'
-    };
-
+        MIME = {
+            'gif': 'image/gif',
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'bmp': 'image/bmp',
+            'webp': 'image/webp',
+            'mp3': 'audio/mpeg',
+            'wav': 'audio/x-wav',
+            'ogg': 'application/ogg',
+            'mid': 'audio/midi',
+            'midi': 'audio/midi',
+            'svg': 'image/svg+xml',
+            'ttf': 'font/truetype',
+            'otf': 'font/opentype',
+            'woff': 'font/woff',
+            'woff2': 'font/woff2',
+            'sfnt': 'font/sfnt',
+            'eot': 'application/vnd.ms-fontobject'
+        };
+    return MIME[extName];
 };
 exports.getFileType = function (file) {
     var extName = _path.extname(file).substr(1).toLowerCase(),
