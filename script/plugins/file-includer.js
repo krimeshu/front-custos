@@ -184,7 +184,7 @@ FileIncluder.prototype = {
                     }
                 } else {
                     var mime = Utils.getMIME(_file) || 'application/octet-stream';
-                    _content = 'data:' + mime + ';base64,' + _content.toString('base64');
+                    _content = 'data:' + mime + ';base64, ' + _content.toString('base64');
                 }
                 newContent = newContent.replace(_str, _content.replace(/\u0024([$`&'])/g, '$$$$$1'));
             }

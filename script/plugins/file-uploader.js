@@ -18,6 +18,7 @@ var FileUploader = function (opts, onError) {
         forInjector = Utils.deepCopy(opts.forInjector),
         uploadAll = opts.uploadAll,
         uploadPage = opts.uploadPage,
+        uploadFilter = opts.uploadFilter,
         uploadForm = opts.uploadForm,
         uploadJudge = opts.uploadJudge,
         concurrentLimit = opts.concurrentLimit || 1;
@@ -27,6 +28,7 @@ var FileUploader = function (opts, onError) {
     self.uploadQueue = [];
     self.uploadAll = uploadAll;
     self.uploadPage = uploadPage;
+    self.uploadFilter = uploadFilter;
     self.uploadForm = uploadForm;
     self.uploadJudge = uploadJudge;
     self.concurrentLimit = concurrentLimit;
@@ -129,7 +131,7 @@ FileUploader.prototype = {
 
             onError = self.onError;
 
-        uploadFilter = uploadFilter ? utils.tryParseFunction(uploadFilter) : null;
+        uploadFilter = uploadFilter ? Utils.tryParseFunction(uploadFilter) : null;
         uploadForm = Utils.tryParseFunction(uploadForm);
         uploadJudge = Utils.tryParseFunction(uploadJudge);
 
@@ -153,9 +155,17 @@ FileUploader.prototype = {
             });
         }
 
+        var injector = new DependencyInjector(forInjector);
+
         if (uploadFilter) {
             // 过滤文件
-            uploadQueue = uploadQueue.filter(uploadFilter);
+            uploadQueue = uploadQueue.filter(function (filePath) {
+                injector.registerMap({
+                    filePath: filePath
+                });
+                var isPassed = injector.invoke(uploadFilter);
+                return isPassed;
+            });
         }
 
         results.queue = uploadQueue;
@@ -166,7 +176,6 @@ FileUploader.prototype = {
             cookiePath = _path.resolve(cookieDir, 'cookie.json'),
             cookieStr = _fs.existsSync(cookiePath) ? _fs.readFileSync(cookiePath).toString() : '';
 
-        var injector = new DependencyInjector(forInjector);
         injector.registerMap({
             uploadQueue: uploadQueue,
             results: results
