@@ -249,12 +249,12 @@ exports.getMIME = function (file) {
             'jpeg': 'image/jpeg',
             'bmp': 'image/bmp',
             'webp': 'image/webp',
+            'svg': 'image/svg+xml',
             'mp3': 'audio/mpeg',
             'wav': 'audio/x-wav',
-            'ogg': 'application/ogg',
             'mid': 'audio/midi',
             'midi': 'audio/midi',
-            'svg': 'image/svg+xml',
+            'ogg': 'application/ogg',
             'ttf': 'font/truetype',
             'otf': 'font/opentype',
             'woff': 'font/woff',
@@ -272,9 +272,9 @@ exports.getFileType = function (file) {
                 style: ['css', 'sass', 'scss'],
                 script: ['js', 'jsx', 'es6', 'vue', 'ts', 'es6'],
                 sourcemap: ['map'],
-                image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'],
-                font: ['svg', 'ttf', 'otf', 'woff', 'woff2', 'sfnt', 'eot'],
-                audio: ['mp3', 'wav', 'ogg', 'mid', 'midi'],
+                image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'],
+                font: ['ttf', 'otf', 'woff', 'woff2', 'sfnt', 'eot'],
+                audio: ['mp3', 'wav', 'mid', 'midi', 'ogg'],
                 dataText: ['json', 'xml']
             }
         );
