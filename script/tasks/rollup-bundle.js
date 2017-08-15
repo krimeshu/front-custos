@@ -21,8 +21,8 @@ PluginLoader.add({
 });
 
 PluginLoader.add({
-    // 'babelPresetEs2015': () => require('babel-preset-es2015'),
-    'babelPresetEs2015Rollup': () => require('babel-preset-es2015-rollup'),
+    'babelPresetEs2015': () => require('babel-preset-es2015'),
+    // 'babelPresetEs2015Rollup': () => require('babel-preset-es2015-rollup'),
     'babelPresetReact': () => require('babel-preset-react'),
     'babelPresetStage2': () => require('babel-preset-stage-2'),
     // 'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
@@ -104,8 +104,8 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             plugin.push(plugins.rollupPluginBabel({
                 // runtimeHelpers: true,
                 presets: [
-                    plugins.babelPresetEs2015Rollup,
-                    // [plugins.babelPresetEs2015.buildPreset, { modules: false }],
+                    // plugins.babelPresetEs2015Rollup,
+                    [plugins.babelPresetEs2015.buildPreset, { modules: false }],
                     plugins.babelPresetReact,
                     plugins.babelPresetStage2
                 ],
