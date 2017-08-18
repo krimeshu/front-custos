@@ -349,5 +349,5 @@ exports.tryParseFunction = function (func) {
             func = '';
             break;
     }
-    return new Function(func)();
+    return new Function('require', func)(require);
 };
