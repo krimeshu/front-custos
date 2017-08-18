@@ -11,7 +11,6 @@ fcOptions['projDir'] = './example';
 frontCustos.setConfig({
     outputDir: './example/dist',
     htmlEnhanced: false,
-    delUnusedFiles: true,
     flattenMap: {
         page: '',
         style: 'css',
