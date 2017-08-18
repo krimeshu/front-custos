@@ -20,6 +20,7 @@ frontCustos.setConfig({
         audio: 'audio',
         other: 'raw'
     },
+    delUnusedFiles: true,
     concurrentLimit: 1
 });
 

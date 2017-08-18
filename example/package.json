@@ -1,6 +1,12 @@
 {
   "name": "example",
-  "version": "1.0.5",
+  "version": "1.0.6",
+  "scripts": {
+    "install": "npm install front-custos -g",
+    "build": "front-custos .",
+    "build-and-upload": "front-custos . -a do_upload",
+    "bnu": "npm run build-and-upload"
+  },
   "fcOpt": {
     "scOpt": {
       "useRatio": "2",

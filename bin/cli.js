@@ -69,10 +69,12 @@ program
                 audio: 'audio',
                 other: 'raw'
             },
+            delUnusedFiles: true,
             concurrentLimit: 1
         });
 
         fcOptions['projDir'] = projDir;
+        fcOptions['tasks'] = [].concat(fcOptions['tasks'], appendTasks);
 
         frontCustos.process(fcOptions);
     });
