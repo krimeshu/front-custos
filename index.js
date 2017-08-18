@@ -101,10 +101,10 @@ var FrontCustos = {
         var replacer = new plugins.ConstReplacer({
             PROJECT: Utils.replaceBackSlash(params.workDir),
             PROJECT_NAME: params.projName,
-            VERSION: params.version
+            VERSION: params.version,
+            TODAY: new Date().toLocaleDateString()
         });
         replacer.doReplace(params);
-
 
         try {
             var smOpt = params.smOpt || (params.smOpt = {});
