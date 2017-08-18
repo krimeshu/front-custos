@@ -7,6 +7,9 @@
     "electron-rebuild": "gulp electron-rebuild",
     "test": "node test"
   },
+  "bin": {
+    "front-custos": "bin/cli.js"
+  },
   "author": "krimeshu",
   "license": "MIT",
   "dependencies": {
@@ -22,6 +25,7 @@
     "babelify": "^7.3.0",
     "browserify": "^14.4.0",
     "cheerio": "^0.22.0",
+    "commander": "^2.11.0",
     "copy-dir": "^0.3.0",
     "css-loader": "^0.28.4",
     "css-modulesify": "^0.28.0",
