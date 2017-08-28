@@ -1,6 +1,11 @@
 # front-custos
 
-一个前端开发的试验工具，用于懒得或不会写 gulpfile 时，能快速对不同项目生成常用的 gulp 任务。
+整合前端开发中常用插件的任务流工具。
+
+## 主要特点：
+
+1. 全局安装，各项目适用，无需多次安装，方便管理
+2. 以页面为入口，检测用到的文件，自动执行对应构建任务
 
 ![screenshot-command-line](https://github.com/krimeshu/front-custos/raw/master/screenshot-command-line.png)
 
