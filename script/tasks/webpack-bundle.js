@@ -112,6 +112,25 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                                 }
                             ]
                         }, {
+                            test: /\.vue$/,
+                            exclude: /node_modules/,
+                            use: {
+                                loader: 'vue-loader',
+                                options: {
+                                    loaders: {
+                                        js: 'babel-loader?presets[]=' +
+                                        require.resolve('babel-preset-es2015')
+                                        + ',presets[]=' +
+                                        require.resolve('babel-preset-react')
+                                        + ',presets[]=' +
+                                        require.resolve('babel-preset-stage-2'),
+                                        css: 'vue-style-loader!css-loader',
+                                        sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax',
+                                        scss: 'vue-style-loader!css-loader!sass-loader'
+                                    }
+                                }
+                            }
+                        }, {
                             test: /\.(js|jsx|es6)$/,
                             exclude: /node_modules/,
                             use: {
@@ -125,20 +144,6 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                                     plugins: [
                                         [plugins.babelPluginTransformRuntime.default, { "polyfill": false }]
                                     ]
-                                }
-                            }
-                        }, {
-                            test: /\.vue$/,
-                            exclude: /node_modules/,
-                            use: {
-                                loader: 'vue-loader',
-                                options: {
-                                    loaders: {
-                                        js: 'babel-loader',
-                                        css: 'vue-style-loader!css-loader',
-                                        sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax',
-                                        scss: 'vue-style-loader!css-loader!sass-loader'
-                                    }
                                 }
                             }
                         }
