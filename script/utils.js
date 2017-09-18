@@ -22,6 +22,7 @@ exports.upgradeOpts = function (_params) {
         alOpt = _params.alOpt || (_params.alOpt = {});
     if (ruOpt.entry) {
         jsOpt.bundleEntry = ruOpt.entry;
+        delete ruOpt.entry;
     }
     // 移除不必要的 alOpt.allot
     delete alOpt.allot;
