@@ -14,6 +14,7 @@ var path = require('path');
 program
     .version(version)
     .arguments('<projDir>')
+    .option('-i, --ignore', "Ignore the tasks configured in package.json. (Works with --append-tasks)")
     .option('-a, --append-tasks <taskName>', "Append extra task names, one at a time, repeatable.", function (val, memo) {
         memo.push(val);
         return memo;
@@ -74,7 +75,9 @@ program
         });
 
         fcOptions['projDir'] = projDir;
-        fcOptions['tasks'] = [].concat(fcOptions['tasks'], appendTasks);
+
+        var tasks = program.ignore ? [] : fcOptions['tasks'];
+        fcOptions['tasks'] = tasks.concat(appendTasks);
 
         frontCustos.process(fcOptions);
     });
