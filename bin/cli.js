@@ -53,6 +53,8 @@ program
             packageOptions = JSON.parse(packageJson),
             fcOptions = packageOptions.fcOpt;
 
+        fcOptions.version = packageOptions.version;
+
         if (!fcOptions) {
             console.error('No "fcOpt" filed in "package.json" of project!');
             return;
