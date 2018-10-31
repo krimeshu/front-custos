@@ -55,16 +55,16 @@ var FrontCustos = {
         config = _config;
     },
     // 根据项目配置计算出项目源目录
-    getSrcDir: function (params) {
-        var projDir = params.projDir || params.srcDir,
-            innerSrcDir = params.innerSrcDir || '';
+    getSrcDir: function (proj, opts) {
+        var projDir = proj.projDir || proj.srcDir,
+            innerSrcDir = opts.innerSrcDir || '';
         return innerSrcDir ? _path.resolve(projDir, innerSrcDir) : projDir;
     },
     // 根据项目配置计算出项目输出目录
-    getDistDir: function (params, outputDir) {
-        var projDir = params.projDir || params.srcDir,
-            projName = _path.basename(params.projDir),
-            innerDistDir = params.innerDistDir || '';
+    getDistDir: function (proj, opts, outputDir) {
+        var projDir = proj.projDir || proj.srcDir,
+            projName = _path.basename(proj.projDir),
+            innerDistDir = opts.innerDistDir || '';
         return innerDistDir ? _path.resolve(projDir, innerDistDir) : _path.resolve(outputDir, projName);
     },
     // 开始处理并执行任务
@@ -75,9 +75,9 @@ var FrontCustos = {
         }
         var params = _params || {};
         // 处理项目基本配置
-        var projDir = params.projDir || params.srcDir,
-            projName = _path.basename(params.projDir),
-            version = params.version || '';
+        var {proj} = params;
+        var {projDir, version}  = proj;
+        var projName = _path.basename(projDir);
 
         if (!projDir) {
             console.error(Utils.formatTime('[HH:mm:ss.fff]'), '开始任务前，请指定一个项目目录。');
@@ -86,8 +86,8 @@ var FrontCustos = {
 
         // 处理项目源、构建、发布目录路径
         var buildDir = _path.resolve(_os.tmpdir(), 'FC_BuildDir', projName),
-            srcDir = this.getSrcDir(params),
-            distDir = this.getDistDir(params, config.outputDir);
+            srcDir = this.getSrcDir(proj, params),
+            distDir = this.getDistDir(proj, params, config.outputDir);
 
         params.projName = projName;
         params.buildDir = buildDir;
@@ -100,8 +100,8 @@ var FrontCustos = {
         // 生成项目常量并替换参数中的项目常量
         var replacer = new plugins.ConstReplacer({
             PROJECT: Utils.replaceBackSlash(params.workDir),
-            PROJECT_NAME: params.projName,
-            VERSION: params.version,
+            PROJECT_NAME: proj.projName,
+            VERSION: proj.version,
             TODAY: new Date().toLocaleDateString()
         });
         replacer.doReplace(params);

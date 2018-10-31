@@ -16,16 +16,12 @@ exports.configDir = function (_fileName) {
 
 exports.upgradeOpts = function (_params) {
     _params = _params || {};
-    // 旧版 ruOpt 中的 entry 升级为 jsOpt 的 bundleEntry
-    var ruOpt = _params.ruOpt || (_params.ruOpt = {}),
-        jsOpt = _params.jsOpt || (_params.jsOpt = {}),
-        alOpt = _params.alOpt || (_params.alOpt = {});
-    if (ruOpt.entry) {
-        jsOpt.bundleEntry = ruOpt.entry;
-        delete ruOpt.entry;
+    // 旧版 fcOpt 升级为 fcOpts
+    var fcOpt = _params.fcOpt;
+    if (fcOpt) {
+        delete _params.fcOpt;
+        _params.fcOpts = {'__default': fcOpt};
     }
-    // 移除不必要的 alOpt.allot
-    delete alOpt.allot;
     return _params;
 };
 

@@ -52,7 +52,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
                 .pipe(plugins.plumber({
                     'errorHandler': function (err) {
                         errorHandler(err);
-                        done();
+                        this.emit('end');
                     }
                 }))
                 .pipe(linker.excludeUnusedFiles(usedFiles))

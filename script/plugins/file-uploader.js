@@ -43,7 +43,7 @@ FileUploader.prototype = {
     _getHistoryFilePath: function () {
         var self = this,
             forInjector = self.forInjector,
-            projDir = forInjector.projDir,
+            {projDir} = forInjector.proj,
             fileDir = Utils.configDir('./fc-upload-history'),
             fileName = Utils.md5(projDir);
         Utils.makeSureDir(fileDir);
@@ -52,7 +52,7 @@ FileUploader.prototype = {
     _loadHistory: function () {
         var self = this,
             forInjector = self.forInjector,
-            projDir = forInjector.projDir,
+            {projDir} = forInjector.proj,
             filePath = self._getHistoryFilePath(),
             history = {
                 projDir: projDir,
