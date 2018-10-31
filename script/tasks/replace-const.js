@@ -10,7 +10,7 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-PluginLoader.add({ 'ConstReplacer': () => require('../plugins/const-replacer.js') });
+PluginLoader.add({'ConstReplacer': () => require('../plugins/const-replacer.js')});
 
 // 替换常量：
 // - 替换常见常量（项目路径、项目名字等）
@@ -24,15 +24,22 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         logId && console.useId && console.useId(logId);
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
 
-        var replacer = new plugins.ConstReplacer({
+        var constMap = {
             PROJECT: Utils.replaceBackSlash(params.workDir),
             PROJECT_NAME: params.projName,
             VERSION: params.version,
             TODAY: new Date().toLocaleDateString()
-        });
+        };
+        if (params.env) {
+            constMap.ENV = params.env;
+        }
+        if (params.mode) {
+            constMap.MODE = params.mode;
+        }
+        var replacer = new plugins.ConstReplacer(constMap);
         //replacer.doReplace(params);
         gulp.src(pattern)
-            .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
+            .pipe(plugins.plumber({'errorHandler': errorHandler}))
             .pipe(replacer.handleFile())
             .pipe(gulp.dest(workDir))
             .on('end', function () {

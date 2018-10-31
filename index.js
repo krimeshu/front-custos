@@ -76,7 +76,7 @@ var FrontCustos = {
         var params = _params || {};
         // 处理项目基本配置
         var {proj} = params;
-        var {projDir, version}  = proj;
+        var {projDir, version, env, mode}  = proj;
         var projName = _path.basename(projDir);
 
         if (!projDir) {
@@ -94,6 +94,8 @@ var FrontCustos = {
         params.srcDir = srcDir;
         params.distDir = !params.keepOldCopy ? distDir : _path.resolve(distDir, version);
         params.version = version;
+        params.env = env;
+        params.mode = mode;
 
         params.workDir = params.workDir || params.srcDir;
 
