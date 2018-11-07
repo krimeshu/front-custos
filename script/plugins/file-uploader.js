@@ -16,6 +16,7 @@ var FileUploader = function (opts, onError) {
     var self = this,
         console = opts.console,
         forInjector = Utils.deepCopy(opts.forInjector),
+        keyPrefix = opts.keyPrefix,
         uploadAll = opts.uploadAll,
         uploadPage = opts.uploadPage,
         uploadFilter = opts.uploadFilter,
@@ -25,6 +26,7 @@ var FileUploader = function (opts, onError) {
 
     forInjector.console = console;
     self.forInjector = forInjector;
+    self.keyPrefix = keyPrefix;
     self.uploadQueue = [];
     self.uploadAll = uploadAll;
     self.uploadPage = uploadPage;
@@ -82,9 +84,10 @@ FileUploader.prototype = {
     _isFileUnchanged: function (filePath) {
         var self = this,
             history = self._history || {},
+            keyPrefix = self.keyPrefix,
             data = history.data,
             currentHash = null,
-            historyHash = data[filePath];
+            historyHash = data[keyPrefix + '!' + filePath];
         try {
             currentHash = Utils.md5(filePath, true);
         } catch (e) {
@@ -95,6 +98,7 @@ FileUploader.prototype = {
     _updateFileHash: function (filePath) {
         var self = this,
             history = self._history || {},
+            keyPrefix = self.keyPrefix,
             data = history.data,
             currentHash = null;
         try {
@@ -102,7 +106,7 @@ FileUploader.prototype = {
         } catch (e) {
             console.log('FileUploader - 更新 MD5 校验出现异常。\n', e);
         }
-        data[filePath] = currentHash;
+        data[keyPrefix + '!' + filePath] = currentHash;
         self._saveHistory();
     },
     appendFile: function () {

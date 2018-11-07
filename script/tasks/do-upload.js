@@ -10,7 +10,7 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-PluginLoader.add({ 'FileUploader': () => require('../plugins/file-uploader.js') });
+PluginLoader.add({'FileUploader': () => require('../plugins/file-uploader.js')});
 
 // 上传：
 // - 将工作目录中的文件发到测试服务器
@@ -19,6 +19,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
         var workDir = params.workDir,
 
             upOpt = params.upOpt,
+            mode = params.mode,
 
             uploadAll = upOpt.uploadAll,
             uploadPage = upOpt.page,
@@ -36,6 +37,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
             console: console,
             forInjector: params,
 
+            keyPrefix: 'mode_' + mode,
             uploadAll: uploadAll,
             uploadPage: uploadPage,
             uploadFilter: uploadFilter,
@@ -48,7 +50,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
 
         gulp.src(_path.resolve(workDir, '**/*'))
-            .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
+            .pipe(plugins.plumber({'errorHandler': errorHandler}))
             .pipe(uploader.appendFile())
             .on('end', function () {
                 var logId = console.genUniqueId && console.genUniqueId();
