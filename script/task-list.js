@@ -19,7 +19,8 @@ var TaskList = [
     { name: 'run_browserify', load: () => require('./tasks/run-browserify'), desc: '使用 browserify 打包脚本' },
     { name: 'run_uglify', load: () => require('./tasks/run-uglify'), desc: '使用 uglify-es 压缩脚本文件' },
     { name: 'allot_link', load: () => require('./tasks/allot-link'), desc: '处理链接关系，分发文件' },
-    { name: 'do_dist', load: () => require('./tasks/do-dist'), desc: '输出项目文件 (构建目录转到输出目录)' }
+    { name: 'do_dist', load: () => require('./tasks/do-dist'), desc: '输出项目文件 (构建目录转到输出目录)' },
+    { name: 'do_upload', load: () => require('./tasks/do-upload'), desc: '上传文件到服务器' },
 ];
 
 module.exports = TaskList;
