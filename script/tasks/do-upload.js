@@ -2,6 +2,8 @@
  * Created by krimeshu on 2016/5/14.
  */
 
+var colorize = require('json-colorizer');
+
 var _path = require('path'),
 
     PluginLoader = require('../plugin-loader.js'),
@@ -11,6 +13,15 @@ var _path = require('path'),
     Timer = require('../timer.js');
 
 PluginLoader.add({'FileUploader': () => require('../plugins/file-uploader.js')});
+
+var colorOptions = {
+    pretty: true,
+    colors: {
+        STRING_KEY: 'green',
+        STRING_LITERAL: 'yellow.bold',
+        NUMBER_LITERAL: 'blue'
+    }
+};
 
 // 上传：
 // - 将工作目录中的文件发到测试服务器
@@ -62,6 +73,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
                         info = taskName + ' 任务进度：' + succeedCount + '/' + queueCount +
                             (failedCount ? ', 失败：' + failedCount : '');
                     logId && console.useId && console.useId(logId);
+                    console.lineUp && console.lineUp();
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), info);
                     //console.log('服务器回复：', response);
                 }, function onComplete(results) {
@@ -80,12 +92,13 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
                                 (unchangedCount ? '，其中' + unchangedCount + '个无变更' : '')) +
                             '。';
                     logId && console.useId && console.useId(logId);
+                    console.lineUp && console.lineUp();
                     console.info(Utils.formatTime('[HH:mm:ss.fff]'), resText + '（' + timer.getTime() + 'ms）');
                     if (succeedCount) {
-                        console.log(succeedCount, '个文件上传成功：', results.succeed);
+                        console.log(succeedCount + '个文件上传成功：' + colorize(results.succeed, colorOptions));
                     }
                     if (failedCount) {
-                        console.log(failedCount, '个文件上传失败：', results.failed);
+                        console.log(failedCount + '个文件上传失败：' + colorize(results.failed, colorOptions));
                     }
                     done();
                 });

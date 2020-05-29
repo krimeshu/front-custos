@@ -68,6 +68,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
                 // 3. 清空构建目录的过期旧文件
                 var afterClean = function () {
                     logId && console.useId && console.useId(logId);
+                    console.lineUp && console.lineUp();
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
                     done();
                 };

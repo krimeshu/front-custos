@@ -84,6 +84,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
                         console.error(Utils.formatTime('[HH:mm:ss.fff]'), '项目的后处理脚本执行异常：', e);
                     }
                     logId && console.useId && console.useId(logId);
+                    // console.lineUp && console.lineUp();
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
 
                     done();

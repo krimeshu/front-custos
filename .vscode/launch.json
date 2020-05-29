@@ -7,15 +7,21 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "启动程序",
-            "program": "${workspaceRoot}\\test.js",
-            "cwd": "${workspaceRoot}"
+            "name": "编译 example",
+            "program": "front-custos example",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         },
         {
             "type": "node",
-            "request": "attach",
-            "name": "附加到进程",
-            "port": 5858
+            "request": "launch",
+            "name": "启动 Test",
+            "program": "${workspaceRoot}/test.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "cwd": "${workspaceRoot}"
         }
     ]
 }

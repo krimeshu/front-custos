@@ -50,6 +50,7 @@ module.exports = {
                 .pipe(gulp.dest(workDir))
                 .once('end', function () {
                     logId && console.useId && console.useId(logId);
+                    console.lineUp && console.lineUp();
                     console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
                     done();
                 });

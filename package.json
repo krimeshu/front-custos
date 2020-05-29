@@ -1,11 +1,12 @@
 {
   "name": "front-custos",
-  "version": "2.1.4",
+  "version": "3.0.0",
   "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
     "electron-rebuild": "gulp electron-rebuild",
-    "test": "node test"
+    "test": "node test",
+    "test:example": "front-custos example"
   },
   "bin": {
     "front-custos": "bin/cli.js"
@@ -45,6 +46,7 @@
     "gulp-sourcemaps": "^2.6.0",
     "gulp-uglify": "^3.0.0",
     "imagemin-pngquant": "^5.0.1",
+    "json-colorizer": "^2.2.2",
     "less-modulesify": "^1.1.3",
     "postcss": "^6.0.8",
     "postcss-loader": "^2.0.6",

@@ -82,6 +82,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
             params.bundleEntry = bundleEntry;
 
             logId && console.useId && console.useId(logId);
+            console.lineUp && console.lineUp();
             console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
             // console.log('找到入口脚本：', bundleEntry);
             done();
