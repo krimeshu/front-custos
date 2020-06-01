@@ -52,11 +52,12 @@ program
 
         var packageJson = fs.readFileSync(packagePath).toString(),
             packageOptions = JSON.parse(packageJson),
-            fcOptions = packageOptions.fcOpts[taskMode];
+            fcOptions = packageOptions.fcOpts[taskMode],
+            projName = path.basename(projDir);
 
         fcOptions['proj'] = {
             projDir,
-            projName: packageOptions.name,
+            projName,
             version: packageOptions.version,
             env: taskMode === '__default' ? '默认' : taskMode,
             mode: taskMode,

@@ -92,15 +92,16 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
                                 (unchangedCount ? '，其中' + unchangedCount + '个无变更' : '')) +
                             '。';
                     logId && console.useId && console.useId(logId);
-                    console.lineUp && console.lineUp();
-                    console.info(Utils.formatTime('[HH:mm:ss.fff]'), resText + '（' + timer.getTime() + 'ms）');
-                    if (succeedCount) {
-                        console.log(succeedCount + '个文件上传成功：' + colorize(results.succeed, colorOptions));
-                    }
-                    if (failedCount) {
-                        console.log(failedCount + '个文件上传失败：' + colorize(results.failed, colorOptions));
-                    }
-                    done();
+                    setTimeout(() => {
+                        console.info(Utils.formatTime('[HH:mm:ss.fff]'), resText + '（' + timer.getTime() + 'ms）');
+                        if (succeedCount) {
+                            console.log(succeedCount + '个文件上传成功：' + colorize(results.succeed, colorOptions));
+                        }
+                        if (failedCount) {
+                            console.log(failedCount + '个文件上传失败：' + colorize(results.failed, colorOptions));
+                        }
+                        done();
+                    }, 100);
                 });
             });
     };
