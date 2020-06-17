@@ -12,7 +12,7 @@ var gulp = require('gulp'),
     TaskList = require('./task-list.js'),
     TaskErrorHandler = require('./task-error-handler.js');
 
-PluginLoader.add({ 'runSequence': () => require('run-sequence') });
+PluginLoader.add({ 'runSequence': () => require('gulp4-run-sequence') });
 
 function TaskManager() {
     this._map = {};
