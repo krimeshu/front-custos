@@ -7,6 +7,7 @@
 var program = require('commander');
 var version = require('../package.json').version;
 var frontCustos = require('../');
+var { deepCopy } = require('../script/utils');
 
 var fs = require('fs');
 var path = require('path');
@@ -55,6 +56,12 @@ program
             fcOptions = packageOptions.fcOpts[taskMode],
             projName = path.basename(projDir);
 
+        if (taskMode !== '__default') {
+            var defaultOptions = packageOptions.fcOpts['__default'];
+            var baseOptions = Object.assign({}, defaultOptions);
+            fcOptions = deepCopy(fcOptions, baseOptions);
+        }
+
         fcOptions['proj'] = {
             projDir,
             projName,
@@ -62,7 +69,6 @@ program
             env: taskMode === '__default' ? '默认' : taskMode,
             mode: taskMode,
         };
-
 
         if (!fcOptions) {
             console.error(`No "fcOpts" filed for mod "${taskMode}" in "package.json" of project!`);
