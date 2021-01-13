@@ -7,10 +7,27 @@
 var program = require('commander');
 var version = require('../package.json').version;
 var frontCustos = require('../');
-var { deepCopy } = require('../script/utils');
 
 var fs = require('fs');
 var path = require('path');
+
+function joinOptions(target, source) {
+    var keys = Object.keys(source);
+    keys.forEach(function (key) {
+        var sourceItem = source[key];
+        var targetItem = target[key];
+
+        var itemType = Object.prototype.toString.call(targetItem);
+        var isExistedMap = itemType === '[object Object]';
+        if (isExistedMap) {
+            joinOptions(targetItem, sourceItem);
+            return;
+        }
+
+        target[key] = sourceItem;
+    });
+    return target;
+}
 
 program
     .version(version)
@@ -56,10 +73,15 @@ program
             fcOptions = packageOptions.fcOpts[taskMode],
             projName = path.basename(projDir);
 
+        if (!fcOptions) {
+            console.error(`No "fcOpts" filed for mod "${taskMode}" in "package.json" of project!`);
+            return;
+        }
+
         if (taskMode !== '__default') {
             var defaultOptions = packageOptions.fcOpts['__default'];
             var baseOptions = Object.assign({}, defaultOptions);
-            fcOptions = deepCopy(fcOptions, baseOptions);
+            fcOptions = joinOptions(baseOptions, fcOptions);
         }
 
         fcOptions['proj'] = {
@@ -69,11 +91,6 @@ program
             env: taskMode === '__default' ? '默认' : taskMode,
             mode: taskMode,
         };
-
-        if (!fcOptions) {
-            console.error(`No "fcOpts" filed for mod "${taskMode}" in "package.json" of project!`);
-            return;
-        }
 
         frontCustos.setConfig({
             outputDir: outputDir,
