@@ -1,12 +1,12 @@
 {
   "name": "front-custos",
-  "version": "3.0.7",
+  "version": "3.1.0",
   "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
     "electron-rebuild": "gulp electron-rebuild",
     "test": "node test",
-    "test:example": "front-custos example"
+    "test:example": "node bin/cli example"
   },
   "bin": {
     "front-custos": "bin/cli.js"

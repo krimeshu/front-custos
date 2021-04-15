@@ -70,16 +70,33 @@ program
 
         var packageJson = fs.readFileSync(packagePath).toString(),
             packageOptions = JSON.parse(packageJson),
-            fcOptions = packageOptions.fcOpts[taskMode],
+            allOptions = packageOptions.fcOptions;
+
+        var fcOptionsPath = path.resolve(projDir, '.fc-options.js');
+        if (fs.existsSync(fcOptionsPath)) {
+            try {
+                allOptions = require(fcOptionsPath);
+            } catch (ex) {
+                console.error(`Error in ".fc-options.js":`, ex);
+                return;
+            }
+        }
+
+        if (!allOptions) {
+            console.error(`No ".fc-options.js" nor "fcOpts" field in "package.json" found for this project!`);
+            return;
+        }
+
+        var fcOptions = allOptions[taskMode],
             projName = path.basename(projDir);
 
         if (!fcOptions) {
-            console.error(`No "fcOpts" filed for mod "${taskMode}" in "package.json" of project!`);
+            console.error(`No mode "${taskMode}" front-custos options!`);
             return;
         }
 
         if (taskMode !== '__default') {
-            var defaultOptions = packageOptions.fcOpts['__default'];
+            var defaultOptions = allOptions['__default'];
             var baseOptions = Object.assign({}, defaultOptions);
             fcOptions = joinOptions(baseOptions, fcOptions);
         }
