@@ -58,7 +58,7 @@ program
         }
 
         if (!outputDir) {
-            outputDir = '../' + path.basename(projDir) + '_dist';
+            outputDir = '../' + path.basename(projDir) + '/dist';
         }
 
         var packagePath = path.resolve(projDir, 'package.json');
