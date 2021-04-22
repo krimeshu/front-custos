@@ -1,6 +1,6 @@
 {
   "name": "front-custos",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,7 @@
   },
   "author": "krimeshu",
   "license": "MIT",
+  "registry": "https://registry.npmjs.org/",
   "dependencies": {
     "autoprefixer": "^7.1.2",
     "babel-loader": "^7.1.1",
@@ -53,6 +54,7 @@
     "postcss-loader": "^2.0.6",
     "postcss-modules": "^0.8.0",
     "request": "^2.72.0",
+    "rimraf": "^2.7.1",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-node-resolve": "^3.0.0",

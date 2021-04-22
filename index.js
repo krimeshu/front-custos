@@ -98,6 +98,7 @@ var FrontCustos = {
         params.mode = mode;
 
         params.workDir = params.workDir || params.srcDir;
+        rimraf.sync(params.distDir);
 
         // 生成项目常量并替换参数中的项目常量
         var replacer = new plugins.ConstReplacer({
