@@ -70,7 +70,7 @@ program
 
         var packageJson = fs.readFileSync(packagePath).toString(),
             packageOptions = JSON.parse(packageJson),
-            allOptions = packageOptions.fcOptions;
+            allOptions = packageOptions.fcOpts || packageOptions.fcOptions;
 
         var fcOptionsPath = path.resolve(projDir, '.fc-options.js');
         if (fs.existsSync(fcOptionsPath)) {
