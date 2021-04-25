@@ -4,6 +4,7 @@
 
 var _os = require('os'),
     _path = require('path'),
+    rimraf = require('rimraf'),
 
     TaskManager = require('./script/task-manager.js'),
     PluginLoader = require('./script/plugin-loader.js'),
