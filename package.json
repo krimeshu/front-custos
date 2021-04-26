@@ -1,6 +1,6 @@
 {
   "name": "front-custos",
-  "version": "3.1.4",
+  "version": "3.2.0",
   "description": "Common front end gulp task collections.",
   "main": "index.js",
   "scripts": {
@@ -75,5 +75,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/krimeshu/front-custos.git"
+  },
+  "devDependencies": {
+    "eslint": "^7.25.0"
   }
 }
