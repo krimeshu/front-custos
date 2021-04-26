@@ -13,7 +13,7 @@ var ConstReplacer = function (constFields) {
         reg;
 
     for (var key in constFields) {
-        if (!constFields.hasOwnProperty(key)) {
+        if (!Object.hasOwnProperty.call(constFields, key)) {
             continue;
         }
         reg = new RegExp('\\{' + key + '\\}', 'g');
@@ -28,7 +28,7 @@ ConstReplacer.prototype = {
         }
         if (typeof(raw) === 'object') {
             for (var key in raw) {
-                if (!raw.hasOwnProperty(key)) {
+                if (!Object.hasOwnProperty.call(raw, key)) {
                     continue;
                 }
                 raw[key] = this.doReplace(raw[key]);
@@ -54,7 +54,7 @@ ConstReplacer.prototype = {
             res = res.replace(reg, '$1' + val.replace(/\u0024([$`&'])/g, '$$$$$1') + '$2');
         }
         for (var key in constFields) {
-            if (!constFields.hasOwnProperty(key)) {
+            if (!Object.hasOwnProperty.call(constFields, key)) {
                 continue;
             }
             val = String(constFields[key]);
@@ -73,7 +73,7 @@ ConstReplacer.prototype = {
 
             if (isText) {
                 content = self._doReplace(content);
-                file.contents = new Buffer(content);
+                file.contents = Buffer.from(content);
             }
 
             return cb(null, file);

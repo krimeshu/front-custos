@@ -14,7 +14,7 @@ var ruleJson = {
         check: function (file) {
             return _path.extname(file) === '.css';
         },
-        reg: /background(?:\-image)?:[^;}]*?url\(['"]?(.+?)#sc(=(.*?))?['"]?\)[^;}]*?/gi,
+        reg: /background(?:-image)?:[^;}]*?url\(['"]?(.+?)#sc(=(.*?))?['"]?\)[^;}]*?/gi,
         m: [0, 1, 3]
     }
 };
@@ -49,8 +49,8 @@ function process(opt, cb) {
         for (var str in map) {
             var item = map[str],
                 truePath = item.truePath,
-                spriteName = item.spriteName,
-                spriteImage = spriteImages[spriteName];
+                spriteName = item.spriteName;
+            let spriteImage = spriteImages[spriteName];
             if (!spriteImage) {
                 spriteImage = spriteImages[spriteName] = [];
                 spriteImagesTotal++;
@@ -67,8 +67,8 @@ function process(opt, cb) {
     }
 
     for (var spriteImageName in spriteImages) {
-        var spriteImage = spriteImages[spriteImageName],
-            distDir = _path.resolve(src, outputDir),
+        let spriteImage = spriteImages[spriteImageName];
+        var distDir = _path.resolve(src, outputDir),
             distImg = _path.resolve(distDir, 'sc_img_' + spriteImageName + '.png');
         joinImages({
             srcImg: spriteImage,
@@ -101,7 +101,7 @@ function buildMap(cssFile, content, maps) {
 
         var map = (maps[cssFile] = maps[cssFile] || {});
         rule.reg.lastIndex = 0;
-        while (m = rule.reg.exec(content)) {
+        while ((m = rule.reg.exec(content))) {
             var matchStr = m[rule.m[0]] || rule.m[0],
                 matchPath = m[rule.m[1]] || rule.m[1],
                 spriteName = m[rule.m[2]] || DEFAULT_SPRITE_NAME;
@@ -159,8 +159,8 @@ function joinImages(opt, cb) {
         } else {
             // 组成图片是否已改变
             for (var i = 0, len = srcImg.length; i < len; i++) {
-                var img = srcImg[i],
-                    s = stamp[img];
+                const img = srcImg[i];
+                const s = stamp[img];
                 if (!s) {
                     changed = true;
                     break;
@@ -173,7 +173,7 @@ function joinImages(opt, cb) {
                     break;
                 }
             }
-            for (var img in stamp) {
+            for (const img in stamp) {
                 if (!visited[img]) {
                     // 组成图片已改变
                     changed = true;
@@ -262,7 +262,7 @@ function replaceStyle(cssFile, rawContent, map, spriteData, useRatio, useRem) {
         css[3] = (-data.y / t);
         css[7] = (data.width / t);
         css[10] = (data.height / t);
-        var replacePattern = str.replace(/([\^\$\(\)\*\+\-\.\[\]\?\\\{}\|])/g, '\\$1'),
+        var replacePattern = str.replace(/([\^$()*+\-.[\]?\\{}|])/g, '\\$1'),
             prepareReg = new RegExp('(' + replacePattern + '[^\\}]*?)background\\-size:[^;]*?;', 'g'),
             replaceReg = new RegExp(replacePattern, 'g'),
             replaceStyle = css.join('');

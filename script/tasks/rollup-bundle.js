@@ -21,10 +21,10 @@ PluginLoader.add({
 });
 
 PluginLoader.add({
-    'babelPresetEs2015': () => require('babel-preset-es2015'),
-    // 'babelPresetEs2015Rollup': () => require('babel-preset-es2015-rollup'),
+    'babelPresetEnv': () => require('babel-preset-env'),
+    // 'babelPresetEnvRollup': () => require('babel-preset-env-rollup'),
     'babelPresetReact': () => require('babel-preset-react'),
-    'babelPresetStage2': () => require('babel-preset-stage-2'),
+    'babelPresetStage0': () => require('babel-preset-stage-0'),
     // 'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
 });
 
@@ -69,22 +69,22 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             return;
         }
 
-        var plugin = [],
+        var rollUpPlugins = [],
             ruOptPlugins = ruOpt.plugins || {};
         if (ruOptPlugins.nodeResolve) {
-            plugin.push(plugins.rollupPluginNodeResolve({ jsnext: true, main: true, browser: true }));
+            rollUpPlugins.push(plugins.rollupPluginNodeResolve({ jsnext: true, main: true, browser: true }));
         }
         if (ruOptPlugins.commonJS) {
-            plugin.push(plugins.rollupPluginCommonJS());
+            rollUpPlugins.push(plugins.rollupPluginCommonJS());
         }
         if (ruOptPlugins.vue) {
-            plugin.push(plugins.rollupPluginVue({
+            rollUpPlugins.push(plugins.rollupPluginVue({
                 css: true
             }));
         }
         if (ruOptPlugins.postcssModules) {
             var cssExportMap = {};
-            plugin.push(plugins.rollupPluginPostcss({
+            rollUpPlugins.push(plugins.rollupPluginPostcss({
                 plugins: [
                     plugins.postcssModules({
                         getJSON: function (id, exportTokens) {
@@ -101,13 +101,14 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
         // var modulePath = _path.join(__dirname, '../../node_modules');
 
         if (ruOptPlugins.babel) {
-            plugin.push(plugins.rollupPluginBabel({
+            rollUpPlugins.push(plugins.rollupPluginBabel({
+                babelrc: false,
                 // runtimeHelpers: true,
                 presets: [
-                    // plugins.babelPresetEs2015Rollup,
-                    [plugins.babelPresetEs2015.buildPreset, { modules: false }],
+                    [plugins.babelPresetEnv.buildPreset, { modules: false }],
+                    // plugins.babelPresetEnv,
                     plugins.babelPresetReact,
-                    plugins.babelPresetStage2
+                    plugins.babelPresetStage0
                 ],
                 plugins: [
                     // plugins.babelPluginTransformRuntime  // move to options
@@ -115,7 +116,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             }));
         }
         if (ruOptPlugins.uglify) {
-            plugin.push(plugins.rollupPluginUglify({
+            rollUpPlugins.push(plugins.rollupPluginUglify({
                 compress: {
                     unused: false
                 }
@@ -128,7 +129,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             .pipe(plugins.rollup(
                 {
                     onwarn: console.warn.bind(console),
-                    plugins: plugin
+                    plugins: rollUpPlugins
                 },
                 { format: format }
             ))

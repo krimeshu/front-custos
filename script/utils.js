@@ -33,7 +33,7 @@ exports.deepCopy = function (origin, _copy) {
         case '[object Object]':
             copy = _copy || {};
             for (var k in origin) {
-                if (origin.hasOwnProperty(k)) {
+                if (Object.hasOwnProperty.call(origin, k)) {
                     copy[k] = self(origin[k]);
                 }
             }
@@ -59,7 +59,7 @@ exports.fillObj = function (refer, target) {
         return false;
     }
     for (var k in refer) {
-        if (refer.hasOwnProperty(k)) {
+        if (Object.hasOwnProperty.call(refer, k)) {
             var rk = refer[k],
                 tk = target[k] === undefined &&
                     (target[k] = exports.deepCopy(rk));
@@ -74,7 +74,7 @@ exports.clearObj = function (o) {
         return;
     }
     for (var p in o) {
-        if (o.hasOwnProperty(p)) {
+        if (Object.hasOwnProperty.call(o, p)) {
             delete o[p];
         }
     }
@@ -276,7 +276,7 @@ exports.getFileType = function (file) {
             }
         );
     for (var type in fileTypes) {
-        if (!fileTypes.hasOwnProperty(type)) {
+        if (!Object.hasOwnProperty.call(fileTypes, type)) {
             continue;
         }
         if (fileTypes[type].indexOf(extName) >= 0) {

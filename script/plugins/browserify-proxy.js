@@ -2,9 +2,7 @@
  * Created by krimeshu on 2016/4/5.
  */
 
-var _path = require('path'),
-
-    PluginLoader = require('../plugin-loader.js'),
+var PluginLoader = require('../plugin-loader.js'),
     plugins = PluginLoader.plugins,
 
     Through2 = require('through2');
@@ -22,9 +20,9 @@ PluginLoader.add({
 });
 
 PluginLoader.add({
-    'babelPresetEs2015': () => require('babel-preset-es2015'),
+    'babelPresetEnv': () => require('babel-preset-env'),
     'babelPresetReact': () => require('babel-preset-react'),
-    'babelPresetStage2': () => require('babel-preset-stage-2'),
+    'babelPresetStage0': () => require('babel-preset-stage-0'),
     // 'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
 });
 
@@ -34,9 +32,9 @@ var BrowserifyProxy = function (opts, onError) {
 
     this.babelifyOpts = !opts.babelify ? null : {
         presets: [
-            plugins.babelPresetEs2015,
+            plugins.babelPresetEnv,
             plugins.babelPresetReact,
-            plugins.babelPresetStage2
+            plugins.babelPresetStage0
         ],
         plugins: [
             [plugins.babelPluginTransformRuntime.default, { "polyfill": false }]
@@ -55,7 +53,7 @@ var BrowserifyProxy = function (opts, onError) {
     this.vueifyOpts = !opts.vueify ? null : {
         babel: {
             presets: [
-                plugins.babelPresetEs2015,
+                plugins.babelPresetEnv,
                 plugins.babelPresetReact
             ],
             plugins: [

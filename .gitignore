@@ -6,3 +6,4 @@ bundle.bat
 7z.exe
 *.map
 es6-test.js
+package-lock.json

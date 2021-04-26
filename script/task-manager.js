@@ -41,7 +41,7 @@ TaskManager.prototype = {
             this._doDefine(name, mod);
         } else if (typeof mod === 'object') {
             for (var subName in mod) {
-                if (mod.hasOwnProperty(subName)) {
+                if (Object.hasOwnProperty.call(mod, subName)) {
                     this._doDefine(subName ? name + ':' + subName : name, mod[subName]);
                 }
             }
@@ -78,7 +78,7 @@ TaskManager.prototype = {
     fillAndOrderTasks: function (tasks) {
         var _tasks = [],
             taskList = TaskList;
-        for (var i = 0, task; task = taskList[i]; i++) {
+        for (var i = 0, task; (task = taskList[i]); i++) {
             var pos = tasks.indexOf(task.name);
             if (!task.disabled && (pos >= 0 || task.locked)) {
                 _tasks.push(task.name);

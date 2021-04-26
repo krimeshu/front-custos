@@ -45,7 +45,7 @@ FileUploader.prototype = {
     _getHistoryFilePath: function () {
         var self = this,
             forInjector = self.forInjector,
-            {projDir} = forInjector.proj,
+            { projDir } = forInjector.proj,
             fileDir = Utils.configDir('./fc-upload-history'),
             fileName = Utils.md5(projDir);
         Utils.makeSureDir(fileDir);
@@ -54,7 +54,7 @@ FileUploader.prototype = {
     _loadHistory: function () {
         var self = this,
             forInjector = self.forInjector,
-            {projDir} = forInjector.proj,
+            { projDir } = forInjector.proj,
             filePath = self._getHistoryFilePath(),
             history = {
                 projDir: projDir,
@@ -230,7 +230,7 @@ FileUploader.prototype = {
 
                     var key, value, type;
                     for (key in formMap) {
-                        if (formMap.hasOwnProperty(key)) {
+                        if (Object.hasOwnProperty.call(formMap, key)) {
                             value = formMap[key];
                             type = typeof (value);
                             if (type !== 'object' && type !== 'function') {
@@ -278,6 +278,7 @@ FileUploader.prototype = {
                             try {
                                 response = JSON.parse(response);
                             } catch (e) {
+                                response = String(response);
                             }
                             if (!err && judgeResult) {
                                 _onSucceed(response, done);
@@ -294,13 +295,13 @@ FileUploader.prototype = {
                         });
                         var form = request.form();
                         for (key in formMap) {
-                            if (formMap.hasOwnProperty(key)) {
+                            if (Object.hasOwnProperty.call(formMap, key)) {
                                 value = formMap[key];
                                 form.append(key, value);
                             }
                         }
                     } catch (e) {
-                        var ex = new Error('上传异常');
+                        const ex = new Error('上传异常');
                         ex.detailError = e;
                         onError && onError(ex);
                     }
@@ -308,7 +309,7 @@ FileUploader.prototype = {
                     try {
                         onProgress && injector.invoke(onProgress);
                     } catch (e) {
-                        var ex = new Error('上传进度脚本执行异常');
+                        const ex = new Error('上传进度脚本执行异常');
                         ex.detailError = e;
                         onError && onError(ex);
                     }

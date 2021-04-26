@@ -21,6 +21,7 @@ var FileIncluder = function (onError) {
 
 FileIncluder.prototype = {
     // 用于匹配语法的正则表达式
+    // eslint-disable-next-line no-control-regex
     _regExp: /(?:\/\/|\/\*|<!--)?[#_]include\(['"]?(.*?)['"]?(,[\s\b\f\n\t\r]*\{[^\u0000]+?})?\)(?:\*\/|-->)?/gi,
     // 获取初始化后的正则表达式
     _getRegExp: function () {
@@ -133,7 +134,7 @@ FileIncluder.prototype = {
                         _para = JSON.parse(_json.substr(1));
                         _inlineString = !!_para['_inlineString'];
                         _fragName = String(_para['_fragName'] || '')
-                            .replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1');
+                            .replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1');
                     } catch (ex) {
                         self.onError && self.onError(ex);
                         continue;
@@ -143,7 +144,7 @@ FileIncluder.prototype = {
                     _file = _path.resolve(dirPath, _file);
                 }
                 _file = Utils.replaceBackSlash(_file);
-                if (!cache.hasOwnProperty(_file)) {
+                if (!Object.hasOwnProperty.call(cache, _file)) {
                     var information = '无法包含文件：' + _path.relative(basePath, _file),
                         err = new Error(information);
                     err.fromFile = _path.relative(basePath, filePath);
@@ -173,10 +174,10 @@ FileIncluder.prototype = {
                     }
                     if (_para) {
                         for (var key in _para) {
-                            if (!_para.hasOwnProperty(key)) {
+                            if (!Object.hasOwnProperty.call(_para, key)) {
                                 continue;
                             }
-                            key = key.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1');
+                            key = key.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1');
                             var value = String(_para[key]),
                                 valueReg = new RegExp('#' + key + '#', 'g');
                             _content = _content.replace(valueReg, value.replace(/\u0024([$`&'])/g, '$$$$$1'));
@@ -190,7 +191,7 @@ FileIncluder.prototype = {
             }
 
             cache[filePath] = newContent;
-            file.contents = isText ? new Buffer(newContent) : newContent;
+            file.contents = isText ? Buffer.from(newContent) : newContent;
 
             return cb(null, file);
         }

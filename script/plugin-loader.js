@@ -16,12 +16,12 @@ var _this = {
     hasCached: function (name) {
         var plugins = this.plugins,
             _cached = plugins._cached;
-        return _cached.hasOwnProperty(name);
+        return Object.hasOwnProperty.call(_cached, name);
     },
     hasLoaded: function (name) {
         var plugins = this.plugins,
             _loaded = plugins._loaded;
-        return _loaded.hasOwnProperty(name);
+        return Object.hasOwnProperty.call(_loaded, name);
     },
     load: function (name) {
         var plugins = this.plugins,
@@ -34,7 +34,7 @@ var _this = {
     },
     add: function (map) {
         for (var name in map) {
-            if (!map.hasOwnProperty(name)) {
+            if (!Object.hasOwnProperty.call(map, name)) {
                 return;
             }
             if (!this.hasCached(name)) {

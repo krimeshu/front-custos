@@ -17,9 +17,9 @@ PluginLoader.add({ 'gulpWebpack': () => require('webpack-stream') });
 PluginLoader.add({ 'autoprefixer': () => require('autoprefixer') });
 
 PluginLoader.add({
-    'babelPresetEs2015': () => require('babel-preset-es2015'),
+    'babelPresetEnv': () => require('babel-preset-env'),
     'babelPresetReact': () => require('babel-preset-react'),
-    'babelPresetStage2': () => require('babel-preset-stage-2'),
+    'babelPresetStage0': () => require('babel-preset-stage-0'),
     'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
 });
 // 使用Webpack打包JS:
@@ -119,11 +119,11 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                                 options: {
                                     loaders: {
                                         js: 'babel-loader?presets[]=' +
-                                        require.resolve('babel-preset-es2015')
+                                        require.resolve('babel-preset-env')
                                         + ',presets[]=' +
                                         require.resolve('babel-preset-react')
                                         + ',presets[]=' +
-                                        require.resolve('babel-preset-stage-2'),
+                                        require.resolve('babel-preset-stage-0'),
                                         css: 'vue-style-loader!css-loader',
                                         sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax',
                                         scss: 'vue-style-loader!css-loader!sass-loader'
@@ -137,9 +137,9 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                                 loader: 'babel-loader',
                                 options: {
                                     presets: [
-                                        plugins.babelPresetEs2015,
+                                        plugins.babelPresetEnv,
                                         plugins.babelPresetReact,
-                                        plugins.babelPresetStage2
+                                        plugins.babelPresetStage0
                                     ],
                                     plugins: [
                                         [plugins.babelPluginTransformRuntime.default, { "polyfill": false }]

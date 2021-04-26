@@ -6,22 +6,22 @@ const originConsole = global.console;
 
 var console = {
     lineUp() {
-        originConsole.log('\033[2A');
+        originConsole.log('\u001b[2A');
     },
     log(...args) {
         originConsole.log(...args);
     },
     info(...args) {
-        args[0] = '\033[32m' + (args[0] || '');
-        originConsole.error(...args, '\033[0m');
+        args[0] = '\u001b[32m' + (args[0] || '');
+        originConsole.error(...args, '\u001b[0m');
     },
     warn(...args) {
-        args[0] = '\033[33m' + (args[0] || '');
-        originConsole.error(...args, '\033[0m');
+        args[0] = '\u001b[33m' + (args[0] || '');
+        originConsole.error(...args, '\u001b[0m');
     },
     error(...args) {
-        args[0] = '\033[31m' + (args[0] || '');
-        originConsole.error(...args, '\033[0m');
+        args[0] = '\u001b[31m' + (args[0] || '');
+        originConsole.error(...args, '\u001b[0m');
     }
 };
 

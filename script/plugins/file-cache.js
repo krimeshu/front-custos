@@ -51,7 +51,7 @@ FileCache.prototype = {
     eachFile: function (cb) {
         var contents = this._contents;
         for (var file in contents) {
-            if (!contents.hasOwnProperty(file)) {
+            if (!Object.hasOwnProperty.call(contents, file)) {
                 continue;
             }
             cb(file, contents[file]);

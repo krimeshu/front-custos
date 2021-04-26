@@ -26,7 +26,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
         );
     };
 
-    var regExpHtml = /<(?:script)[^>]*(?:src)\s*=\s*['"]?([^<>'"\$]+)[<>'"\$]?[^>]*>/gi;
+    var regExpHtml = /<(?:script)[^>]*(?:src)\s*=\s*['"]?([^<>'"$]+)[<>'"$]?[^>]*>/gi;
 
     return function (done) {
         var workDir = params.workDir,

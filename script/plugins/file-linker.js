@@ -23,10 +23,10 @@ var FileLinker = function (opts, onError) {
 
 FileLinker.prototype = {
     // 用于匹配语法的正则表达式
-    _regExp: /(?:\/\/)?[#_]link\(['"]?([^\)'"]+)['"]?\)/gi,
+    _regExp: /(?:\/\/)?[#_]link\(['"]?([^)'"]+)['"]?\)/gi,
     _regExpMap: /(?:\/\/|\/\*)\s*#\s*sourceMappingURL=['"]?(.*?)['"]?\s*(\*\/\s*)?($|\n)/gi,
-    _regExpHtml: /<(?:link|script|img|audio|video|source)[^>]*[^:](?:href|src|data\-src)\s*=\s*['"]?([^<>'"\$]+)[<>'"\$]?[^>]*>/gi,
-    _regExpCss: /[,:\s\b\f\n\t\r]url\(['"]?([^\)'"]+)['"]?\)/gi,
+    _regExpHtml: /<(?:link|script|img|audio|video|source)[^>]*[^:](?:href|src|data-src)\s*=\s*['"]?([^<>'"$]+)[<>'"$]?[^>]*>/gi,
+    _regExpCss: /[,:\s\b\f\n\t\r]url\(['"]?([^)'"]+)['"]?\)/gi,
     // 文件指纹添加方式（不添加/作为URL参数/作为文件名后缀）
     _hashLinkTypes: {
         NO_HASH: 'NO_HASH',
@@ -79,9 +79,9 @@ FileLinker.prototype = {
     // 递归获取引用依赖关系表
     _getFileDep: function (filePath, cache, src) {
         var self = this,
-            depList = [],
-            isSourcemap = Utils.isSourcemap(filePath),
-            isText = Utils.isText(filePath);
+            depList = [];
+        // var isSourcemap = Utils.isSourcemap(filePath);
+        var isText = Utils.isText(filePath);
         if (!isText) {
             return depList;
         }
@@ -169,7 +169,7 @@ FileLinker.prototype = {
             if (cb) {
                 var _newFile = cb(_rawFile, _file), // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
                     //_newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')),
-                    _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+                    _pattern = _rawStr.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g');
                 newContent = newContent.replace(_reg, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1'));
             }
@@ -181,7 +181,7 @@ FileLinker.prototype = {
         //    console.log('> new:', newContent.substr(0, 1000));
         //}
         if (cb) {
-            file.contents = new Buffer(newContent);
+            file.contents = Buffer.from(newContent);
         }
         //console.log(' |  getUsedFiles:', usedFiles);
         return usedFiles;
@@ -229,14 +229,14 @@ FileLinker.prototype = {
             if (cb) {
                 var _newFile = cb(_rawFile, _file), // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
                     _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')), // 注意，与上面不同
-                    _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+                    _pattern = _rawStr.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g');
                 //console.log(_rawStr, '=>', _newStr);
                 newContent = newContent.replace(_reg, _newStr.replace(/\u0024([$`&'])/g, '$$$$$1'));
             }
         }
         if (cb) {
-            file.contents = new Buffer(newContent);
+            file.contents = Buffer.from(newContent);
         }
         //console.log(' |  _getUsedMapFiles:', usedFiles);
         return usedFiles;
@@ -245,18 +245,18 @@ FileLinker.prototype = {
     _handleUsedFilesByMap: function (file, cb) {
         var self = this,
             match,
-            basePath = Utils.replaceBackSlash(file.base),
-            filePath = Utils.replaceBackSlash(file.path),
-            dir = _path.dirname(filePath);
+            basePath = Utils.replaceBackSlash(file.base);
+        // var filePath = Utils.replaceBackSlash(file.path);
+        // var dir = _path.dirname(filePath);
 
-        var basePattern = basePath.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+        var basePattern = basePath.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1'),
             regExp = new RegExp('[\'"](' + basePattern + '[^\'"]*)[\'"]', 'gi');
 
         var content = String(file.contents);
 
         // 处理 webpack 加载 loader 时的中间路径
         var cwdPath = Utils.replaceBackSlash(process.cwd()) + '/',
-            cwdBasePattern = '"webpack:\\/+' + cwdPath.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+            cwdBasePattern = '"webpack:\\/+' + cwdPath.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1'),
             cwdBaseReg = new RegExp(cwdBasePattern, 'g');
 
         content = content.replace(cwdBaseReg, '"');
@@ -274,7 +274,7 @@ FileLinker.prototype = {
             if (cb) {
                 var _newFile = Utils.replaceBackSlash(_path.relative(basePath, _file)),
                     _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')),
-                    _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+                    _pattern = _rawStr.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g');
                 //console.log(_rawStr, '=>', _newStr);
                 newContent = newContent.replace(_reg, _newStr.replace(/\u0024([$`&'])/g, '$$$$$1'));
@@ -288,7 +288,7 @@ FileLinker.prototype = {
         // newContent = newContent.replace(regExpModule, '...');
 
         if (cb) {
-            file.contents = new Buffer(newContent);
+            file.contents = Buffer.from(newContent);
         }
     },
     // 匹配CSS代码中的url来获取文件引用依赖关系
@@ -334,14 +334,14 @@ FileLinker.prototype = {
             if (cb) {
                 var _newFile = cb(_rawFile, _file), // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
                     _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')), // 注意，与上面不同
-                    _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+                    _pattern = _rawStr.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g');
                 //console.log(_rawStr, '=>', _newStr);
                 newContent = newContent.replace(_reg, _newStr.replace(/\u0024([$`&'])/g, '$$$$$1'));
             }
         }
         if (cb) {
-            file.contents = new Buffer(newContent);
+            file.contents = Buffer.from(newContent);
         }
         //console.log(' |  _getUsedFilesByCssUrl:', usedFiles);
         return usedFiles;
@@ -387,13 +387,13 @@ FileLinker.prototype = {
             if (cb) {
                 var _newFile = cb(_rawFile, _file), // 调整后文件路径 = 处理（原始文件路径, 原始文件完整路径）
                     _newStr = _rawStr.replace(_rawFile, _newFile.replace(/\u0024([$`&'])/g, '$$$$$1')), // 注意，与上面不同
-                    _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+                    _pattern = _rawStr.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g');
                 newContent = newContent.replace(_reg, _newStr.replace(/\u0024([$`&'])/g, '$$$$$1'));
             }
         }
         if (cb) {
-            file.contents = new Buffer(newContent);
+            file.contents = Buffer.from(newContent);
         }
         //console.log(' |  _getUsedFilesByHtmlUrl:', usedFiles);
         return usedFiles;
@@ -412,7 +412,6 @@ FileLinker.prototype = {
                 normalizeWhitespace: false,
                 lowerCaseTags: false,
                 lowerCaseAttributeNames: false,
-                recognizeSelfClosing: true,
                 decodeEntities: false
             });
         $('link[href], img[src], script[src], audio[src], video[src], source[src]').each(function () {
@@ -468,7 +467,7 @@ FileLinker.prototype = {
         });
         if (cb) {
             // 不推荐使用 $this.xml()，会将 <div></div> 转换成 <div/>
-            file.contents = new Buffer($.html());
+            file.contents = Buffer.from($.html());
         }
         //console.log(' |  _getUsedFilesByDom:', usedFiles);
         return usedFiles;

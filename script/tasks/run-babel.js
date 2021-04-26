@@ -12,9 +12,9 @@ var _path = require('path'),
 
 PluginLoader.add({
     'babel': () => require('gulp-babel'),
-    'babelPresetEs2015': () => require('babel-preset-es2015'),
+    'babelPresetEnv': () => require('babel-preset-env'),
     'babelPresetReact': () => require('babel-preset-react'),
-    'babelPresetStage2': () => require('babel-preset-stage-2'),
+    'babelPresetStage0': () => require('babel-preset-stage-0'),
     // 'babelPluginTransformRuntime': () => require('babel-plugin-transform-runtime')
 });
 
@@ -42,9 +42,9 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             })))
             .pipe(plugins.cache(plugins.babel({
                 presets: [
-                    plugins.babelPresetEs2015,
+                    plugins.babelPresetEnv,
                     plugins.babelPresetReact,
-                    plugins.babelPresetStage2
+                    plugins.babelPresetStage0
                 ],
                 plugins: [
                     // plugins.babelPluginTransformRuntime.default

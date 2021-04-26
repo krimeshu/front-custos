@@ -11,7 +11,7 @@ DependencyInjector.prototype = {
     'registerMap': function (map) {
         var argMap = this.argMap;
         for (var k in map) {
-            if (map.hasOwnProperty(k)) {
+            if (Object.hasOwnProperty.call(map, k)) {
                 argMap[k] = map[k];
             }
         }
@@ -19,7 +19,7 @@ DependencyInjector.prototype = {
     'unregisterMap': function (map) {
         var argMap = this.argMap;
         for (var k in map) {
-            if (map.hasOwnProperty(k)) {
+            if (Object.hasOwnProperty.call(map, k)) {
                 delete argMap[k];
             }
         }
@@ -28,7 +28,7 @@ DependencyInjector.prototype = {
         var argMap = this.argMap,
             argNames = [];
         for (var k in argMap) {
-            if (argMap.hasOwnProperty(k)) {
+            if (Object.hasOwnProperty.call(argMap, k)) {
                 argNames.push(k);
             }
         }
@@ -51,7 +51,7 @@ DependencyInjector.prototype = {
                 break;
             case '[object Function]':
                 // 通过反射解析参数表
-                var args = func.toString().match(/^\s*function\s*[^\(]*\(\s*([^\)]*)\)/m)[1];
+                var args = func.toString().match(/^\s*function\s*[^(]*\(\s*([^)]*)\)/m)[1];
                 funcDepArr = args.replace(/\s/g, '').split(',');
                 funcDepArr.push(func);
                 break;
@@ -72,7 +72,7 @@ DependencyInjector.prototype = {
         func = funcDepArr[depCount];
         for (var i = 0, dep; i < depCount; i++) {
             dep = funcDepArr[i];
-            if (!argMap.hasOwnProperty(dep)) {
+            if (!Object.hasOwnProperty.call(argMap, dep)) {
                 err = new Error('未知依赖参数名: ' + dep);
                 err.targetFunction = func;
                 err.dependencyName = dep;

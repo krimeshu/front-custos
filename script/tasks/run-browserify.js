@@ -62,9 +62,7 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
             extensions: [' ', 'js', 'jsx', 'vue']
         }), errorHandler);
 
-        gulp.src(entry, {
-                base: workDir
-            })
+        gulp.src(entry, { base: workDir })
             .pipe(plugins.plumber({
                 'errorHandler': errorHandler
             }))
@@ -77,11 +75,13 @@ module.exports = function (console, gulp, params, errorHandler, taskName) {
                 sourceMappingURL
             })))
             .pipe(gulp.dest(workDir))
-            .once('end', function () {
-                logId && console.useId && console.useId(logId);
-                console.lineUp && console.lineUp();
-                console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
-                done();
-            });
+            .once('end', _finish);
+
+        function _finish() {
+            logId && console.useId && console.useId(logId);
+            console.lineUp && console.lineUp();
+            console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务结束。（' + timer.getTime() + 'ms）');
+            done();
+        }
     };
 };

@@ -52,7 +52,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
                 var recycledFiles = [],
                     allotedUsedFiles = [];
                 for (var oldFile in fileAllotMap) {
-                    if (fileAllotMap.hasOwnProperty(oldFile)) {
+                    if (Object.hasOwnProperty.call(fileAllotMap, oldFile)) {
                         var newFile = fileAllotMap[oldFile];
                         oldFile !== newFile && recycledFiles.push(oldFile);
                     }

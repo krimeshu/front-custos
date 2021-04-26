@@ -20,10 +20,12 @@ var VuePhpSsrTemplateCompiler = function (onError) {
 };
 
 VuePhpSsrTemplateCompiler.prototype = {
+    // eslint-disable-next-line no-control-regex
     _regTag: /<vue-php-ssr-template>([^\u0000]*?)<\/vue-php-ssr-template>/gi,
     _regForProp: /^\s*\(\s*([^\s]*?)\s*,\s*([^\s]*?)\s*\)\s*in\s*([^\s]*?)\s*$/gi,
+    // eslint-disable-next-line no-control-regex
     _regForMustache: /{{([^\u0000]*?)}}/gi,
-    _regSplit: /[\s\+\-\*\/&\^\|\[\]\(\)\{\}=\!~\?:]/,
+    _regSplit: /[\s+\-*/&^|[\](){}=!~?:]/,
     _regPreserve: /(true|false|null)/,
     handleFile: function () {
         var self = this;
@@ -35,7 +37,7 @@ VuePhpSsrTemplateCompiler.prototype = {
 
             if (isText) {
                 content = self.analyseDom(content);
-                file.contents = new Buffer(content);
+                file.contents = Buffer.from(content);
             }
 
             return cb(null, file);
@@ -59,7 +61,6 @@ VuePhpSsrTemplateCompiler.prototype = {
                 normalizeWhitespace: false,
                 lowerCaseTags: false,
                 lowerCaseAttributeNames: false,
-                recognizeSelfClosing: true,
                 decodeEntities: false
             });
 
@@ -118,7 +119,7 @@ VuePhpSsrTemplateCompiler.prototype = {
                                 }).join('');
                                 // 是否合法变量名
                                 let isPreserve = _isPreserve.test(_varName);
-                                if (/^[_\$a-z]/i.test(_varName) && !isPreserve) {
+                                if (/^[_$a-z]/i.test(_varName) && !isPreserve) {
                                     _varName = '$' + _varName;
                                 }
                                 if (isPreserve) {
@@ -133,15 +134,15 @@ VuePhpSsrTemplateCompiler.prototype = {
                         }
                     }
                     let _newExp = '<?php echo ' + _newStr + '; ?>';
-                    let _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+                    let _pattern = _rawStr.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1'),
                         _reg = new RegExp(_pattern, 'g');
-                    _newPhpTpl = _newPhpTpl.replace(_reg, _newExp.replace(/\u0024([\$`&'])/g, '$$$$$1'));
+                    _newPhpTpl = _newPhpTpl.replace(_reg, _newExp.replace(/\u0024([$`&'])/g, '$$$$$1'));
                 }
             }
 
             {
                 // 将处理完的脚本，结合原始脚本，一起替换到新文本内容中
-                let _pattern = _rawStr.replace(/([\^\$\(\)\*\+\.\[\]\?\\\{}\|])/g, '\\$1'),
+                let _pattern = _rawStr.replace(/([\^$()*+.[\]?\\{}|])/g, '\\$1'),
                     _reg = new RegExp(_pattern, 'g'),
                     _newTpl = mark + _newPhpTpl + _rawTpl + mark;
                 newContent = newContent.replace(_reg, _newTpl.replace(/\u0024([$`&'])/g, '$$$$$1'));

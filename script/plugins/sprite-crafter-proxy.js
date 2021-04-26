@@ -24,7 +24,7 @@ var SpriteCrafterProxy = {
 
             files.push(file.path);
 
-            file.content = new Buffer(content);
+            file.content = Buffer.from(content);
 
             return cb(null, file);
         });
@@ -67,8 +67,8 @@ var SpriteCrafterProxy = {
         }
 
         for (var spriteImageName in spriteImages) {
-            var spriteImage = spriteImages[spriteImageName],
-                distDir = _path.resolve(src, outputDir),
+            let spriteImage = spriteImages[spriteImageName];
+            var distDir = _path.resolve(src, outputDir),
                 distImg = _path.resolve(distDir, 'sc_img_' + spriteImageName + '.png');
             SpriteCrafter.joinImages({
                 srcImg: spriteImage,
