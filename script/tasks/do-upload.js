@@ -12,7 +12,7 @@ var _path = require('path'),
     Utils = require('../utils.js'),
     Timer = require('../timer.js');
 
-PluginLoader.add({'FileUploader': () => require('../plugins/file-uploader.js')});
+PluginLoader.add({ 'FileUploader': () => require('../plugins/file-uploader.js') });
 
 var colorOptions = {
     pretty: true,
@@ -37,6 +37,7 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
             uploadFilter = upOpt.filter,
             uploadForm = upOpt.form,
             uploadJudge = upOpt.judge,
+            uploadComplete = upOpt.complete,
 
             concurrentLimit = config.concurrentLimit | 0;
 
@@ -54,14 +55,15 @@ module.exports = function (console, gulp, params, config, errorHandler, taskName
             uploadFilter: uploadFilter,
             uploadForm: uploadForm,
             uploadJudge: uploadJudge,
-            concurrentLimit: concurrentLimit
+            concurrentLimit: concurrentLimit,
+            uploadComplete: uploadComplete,
         }, errorHandler);
 
         var timer = new Timer();
         console.log(Utils.formatTime('[HH:mm:ss.fff]'), taskName + ' 任务开始……');
 
         gulp.src(_path.resolve(workDir, '**/*'))
-            .pipe(plugins.plumber({'errorHandler': errorHandler}))
+            .pipe(plugins.plumber({ 'errorHandler': errorHandler }))
             .pipe(uploader.appendFile())
             .on('end', function () {
                 var logId = console.genUniqueId && console.genUniqueId();

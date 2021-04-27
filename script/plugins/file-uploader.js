@@ -22,7 +22,8 @@ var FileUploader = function (opts, onError) {
         uploadFilter = opts.uploadFilter,
         uploadForm = opts.uploadForm,
         uploadJudge = opts.uploadJudge,
-        concurrentLimit = opts.concurrentLimit || 1;
+        concurrentLimit = opts.concurrentLimit || 1,
+        uploadComplete = opts.uploadComplete;
 
     forInjector.console = console;
     self.forInjector = forInjector;
@@ -34,6 +35,7 @@ var FileUploader = function (opts, onError) {
     self.uploadForm = uploadForm;
     self.uploadJudge = uploadJudge;
     self.concurrentLimit = concurrentLimit;
+    self.uploadComplete = uploadComplete;
     self.concurrentCount = 0;
 
     self.onError = onError;
@@ -132,6 +134,7 @@ FileUploader.prototype = {
             uploadForm = self.uploadForm,
             uploadJudge = self.uploadJudge,
             uploadQueue = self.uploadQueue,
+            uploadComplete = self.uploadComplete,
 
             onError = self.onError;
 
@@ -185,8 +188,21 @@ FileUploader.prototype = {
             results: results
         });
 
+        function uploadDone() {
+            try {
+                onComplete && injector.invoke(onComplete);
+                setTimeout(() => {
+                    uploadComplete && injector.invoke(uploadComplete);
+                }, 200);
+            } catch (e) {
+                var ex = new Error('上传完成脚本执行异常');
+                ex.detailError = e;
+                onError && onError(ex);
+            }
+        }
+
         if (uploadQueue.length <= 0) {
-            onComplete && injector.invoke(onComplete);
+            uploadDone();
         } else {
             uploadQueue.forEach(function (filePath) {
                 var results = self.uploadResult,
@@ -339,16 +355,10 @@ FileUploader.prototype = {
                     _checkNext(done);
                 }, _checkNext = function (done) {
                     fileStream.close();
-                    if (results.succeed.length + results.failed.length >= results.queue.length) {
-                        try {
-                            onComplete && injector.invoke(onComplete);
-                        } catch (e) {
-                            var ex = new Error('上传完成脚本执行异常');
-                            ex.detailError = e;
-                            onError && onError(ex);
-                        }
-                    }
                     done();
+                    if (results.succeed.length + results.failed.length >= results.queue.length) {
+                        uploadDone();
+                    }
                 };
 
                 self.doUpload(_upload);
