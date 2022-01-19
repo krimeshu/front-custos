@@ -13,7 +13,7 @@ var _path = require('path'),
 
 PluginLoader.add({ 'del': () => require('del') });
 PluginLoader.add({ 'imagemin': () => require('gulp-imagemin') });
-// PluginLoader.add({ 'pngquant': () => require('imagemin-pngquant') });
+PluginLoader.add({ 'pngquant': () => require('imagemin-pngquant') });
 
 var cacheDirName = 'imagemin-cache';
 
@@ -37,8 +37,8 @@ module.exports = {
                     plugins.imagemin([
                         plugins.imagemin.gifsicle({ interlaced: true }),
                         plugins.imagemin.jpegtran({ progressive: true }),
-                        plugins.imagemin.optipng({ optimizationLevel: 5 }),
-                        // plugins.pngquant({ quality: '50-80', speed: 4 }),
+                        // plugins.imagemin.optipng({ optimizationLevel: 5 }),
+                        plugins.pngquant({ quality: '50-80', speed: 4 }),
                         plugins.imagemin.svgo({ plugins: [{ removeViewBox: false }] })
                     ]), {
                     fileCache: new plugins.cache.Cache({ cacheDirName: cacheDirName })
